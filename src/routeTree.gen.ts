@@ -10,33 +10,154 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as MyRouteImport } from './routes/my'
+import { Route as ProjectsRouteImport } from './routes/projects'
+import { Route as RoleRouteImport } from './routes/role'
+import { Route as ChatIndexRouteImport } from './routes/chat.index'
+import { Route as ChatIdRouteImport } from './routes/chat.$id'
+import { Route as PartnerIdRouteImport } from './routes/partner.$id'
+import { Route as ProjectIdRouteImport } from './routes/project.$id'
+import { Route as ProposeIdRouteImport } from './routes/propose.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExploreRoute = ExploreRouteImport.update({
+  id: '/explore',
+  path: '/explore',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyRoute = MyRouteImport.update({
+  id: '/my',
+  path: '/my',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectsRoute = ProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoleRoute = RoleRouteImport.update({
+  id: '/role',
+  path: '/role',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatIndexRoute = ChatIndexRouteImport.update({
+  id: '/chat/',
+  path: '/chat/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatIdRoute = ChatIdRouteImport.update({
+  id: '/chat/$id',
+  path: '/chat/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PartnerIdRoute = PartnerIdRouteImport.update({
+  id: '/partner/$id',
+  path: '/partner/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectIdRoute = ProjectIdRouteImport.update({
+  id: '/project/$id',
+  path: '/project/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProposeIdRoute = ProposeIdRouteImport.update({
+  id: '/propose/$id',
+  path: '/propose/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/explore': typeof ExploreRoute
+  '/my': typeof MyRoute
+  '/projects': typeof ProjectsRoute
+  '/role': typeof RoleRoute
+  '/chat/$id': typeof ChatIdRoute
+  '/partner/$id': typeof PartnerIdRoute
+  '/project/$id': typeof ProjectIdRoute
+  '/propose/$id': typeof ProposeIdRoute
+  '/chat/': typeof ChatIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/explore': typeof ExploreRoute
+  '/my': typeof MyRoute
+  '/projects': typeof ProjectsRoute
+  '/role': typeof RoleRoute
+  '/chat/$id': typeof ChatIdRoute
+  '/partner/$id': typeof PartnerIdRoute
+  '/project/$id': typeof ProjectIdRoute
+  '/propose/$id': typeof ProposeIdRoute
+  '/chat': typeof ChatIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/explore': typeof ExploreRoute
+  '/my': typeof MyRoute
+  '/projects': typeof ProjectsRoute
+  '/role': typeof RoleRoute
+  '/chat/$id': typeof ChatIdRoute
+  '/partner/$id': typeof PartnerIdRoute
+  '/project/$id': typeof ProjectIdRoute
+  '/propose/$id': typeof ProposeIdRoute
+  '/chat/': typeof ChatIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/explore'
+    | '/my'
+    | '/projects'
+    | '/role'
+    | '/chat/$id'
+    | '/partner/$id'
+    | '/project/$id'
+    | '/propose/$id'
+    | '/chat/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/explore'
+    | '/my'
+    | '/projects'
+    | '/role'
+    | '/chat/$id'
+    | '/partner/$id'
+    | '/project/$id'
+    | '/propose/$id'
+    | '/chat'
+  id:
+    | '__root__'
+    | '/'
+    | '/explore'
+    | '/my'
+    | '/projects'
+    | '/role'
+    | '/chat/$id'
+    | '/partner/$id'
+    | '/project/$id'
+    | '/propose/$id'
+    | '/chat/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ExploreRoute: typeof ExploreRoute
+  MyRoute: typeof MyRoute
+  ProjectsRoute: typeof ProjectsRoute
+  RoleRoute: typeof RoleRoute
+  ChatIdRoute: typeof ChatIdRoute
+  PartnerIdRoute: typeof PartnerIdRoute
+  ProjectIdRoute: typeof ProjectIdRoute
+  ProposeIdRoute: typeof ProposeIdRoute
+  ChatIndexRoute: typeof ChatIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +169,83 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/explore': {
+      id: '/explore'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof ExploreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my': {
+      id: '/my'
+      path: '/my'
+      fullPath: '/my'
+      preLoaderRoute: typeof MyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects': {
+      id: '/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof ProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/role': {
+      id: '/role'
+      path: '/role'
+      fullPath: '/role'
+      preLoaderRoute: typeof RoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat/': {
+      id: '/chat/'
+      path: '/chat'
+      fullPath: '/chat/'
+      preLoaderRoute: typeof ChatIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat/$id': {
+      id: '/chat/$id'
+      path: '/chat/$id'
+      fullPath: '/chat/$id'
+      preLoaderRoute: typeof ChatIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/partner/$id': {
+      id: '/partner/$id'
+      path: '/partner/$id'
+      fullPath: '/partner/$id'
+      preLoaderRoute: typeof PartnerIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/project/$id': {
+      id: '/project/$id'
+      path: '/project/$id'
+      fullPath: '/project/$id'
+      preLoaderRoute: typeof ProjectIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/propose/$id': {
+      id: '/propose/$id'
+      path: '/propose/$id'
+      fullPath: '/propose/$id'
+      preLoaderRoute: typeof ProposeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ExploreRoute: ExploreRoute,
+  MyRoute: MyRoute,
+  ProjectsRoute: ProjectsRoute,
+  RoleRoute: RoleRoute,
+  ChatIdRoute: ChatIdRoute,
+  PartnerIdRoute: PartnerIdRoute,
+  ProjectIdRoute: ProjectIdRoute,
+  ProposeIdRoute: ProposeIdRoute,
+  ChatIndexRoute: ChatIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
