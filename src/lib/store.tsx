@@ -31,7 +31,35 @@ export type Project = {
   status: ProjectStatus;
   createdAt: string;
   progress: number;
+  /** 고정 금액(원). 수익 배분/현물이면 없음 */
+  amount?: number;
+  /** 대금을 받는 쪽 */
+  payee?: "me" | "partner";
   contract: Contract;
+};
+
+/** 내가 올린 콜라보 글 */
+export type Post = {
+  id: string;
+  title: string;
+  category: string;
+  skills: string[];
+  description: string;
+  amount: number;
+  payee: "me" | "partner";
+  duration: string;
+  lookingFor: Role;
+  createdAt: string;
+  status: "open" | "closed";
+};
+
+export type Settings = {
+  notifyChat: boolean;
+  notifyProposal: boolean;
+  notifyMarketing: boolean;
+  bank: string;
+  account: string;
+  area: string;
 };
 
 export type Message = { id: string; from: "me" | "them" | "system"; text: string; time: string };
@@ -39,9 +67,9 @@ export type Thread = { partnerId: string; messages: Message[]; unread: number };
 
 type Profile = { nickname: string; role: Role | null };
 
-type State = { profile: Profile; projects: Project[]; threads: Thread[] };
+type State = { profile: Profile; projects: Project[]; threads: Thread[]; posts: Post[]; settings: Settings };
 
-const STORAGE_KEY = "colabi-state-v1";
+const STORAGE_KEY = "colabi-state-v2";
 
 function seed(): State {
   const base = (over: Partial<Contract>): Contract => ({
@@ -62,13 +90,18 @@ function seed(): State {
   return {
     profile: { nickname: "", role: null },
     projects: [
-      { id: "pr1", partnerId: "p1", status: "ongoing", createdAt: "2026-10-28", progress: 60, contract: base({ title: "소금빵 포장 스티커 디자인", scope: "포장 스티커 3종 디자인", deliverables: "AI 원본 파일, 인쇄용 PDF", partnerName: "망원 소금빵집", proposerSign: "signed", partnerSign: "signed", proposerSignedAt: "2026-10-28", partnerSignedAt: "2026-10-29" }) },
+      { id: "pr1", partnerId: "p1", status: "ongoing", createdAt: "2026-10-28", progress: 60, amount: 300000, payee: "me", contract: base({ title: "소금빵 포장 스티커 디자인", scope: "포장 스티커 3종 디자인", deliverables: "AI 원본 파일, 인쇄용 PDF", partnerName: "망원 소금빵집", proposerSign: "signed", partnerSign: "signed", proposerSignedAt: "2026-10-28", partnerSignedAt: "2026-10-29" }) },
       { id: "pr2", partnerId: "p3", status: "ongoing", createdAt: "2026-11-02", progress: 25, contract: base({ title: "꽃 × 캘리 원데이 클래스", scope: "주말 원데이 클래스 2회 공동 운영", deliverables: "클래스 커리큘럼, 홍보 포스터", payType: "share", payAmount: "수익 5:5", partnerName: "연남 꽃집 들꽃", proposerSign: "signed", partnerSign: "signed", proposerSignedAt: "2026-11-02", partnerSignedAt: "2026-11-03" }) },
-      { id: "pr3", partnerId: "p5", status: "received", createdAt: "2026-11-08", progress: 0, contract: base({ title: "로스팅 과정 숏폼 3편", scope: "로스팅 과정을 담은 30초 숏폼 영상 3편 촬영·편집", deliverables: "세로형 MP4 3편", startDate: "2026-11-15", endDate: "2026-12-05", payAmount: "250,000원 + 원두 2kg", proposerName: "상수 로스터리 결", partnerName: "나", proposerSign: "signed", proposerSignedAt: "2026-11-08" }) },
+      { id: "pr3", partnerId: "p5", status: "received", createdAt: "2026-11-08", progress: 0, amount: 250000, payee: "me", contract: base({ title: "로스팅 과정 숏폼 3편", scope: "로스팅 과정을 담은 30초 숏폼 영상 3편 촬영·편집", deliverables: "세로형 MP4 3편", startDate: "2026-11-15", endDate: "2026-12-05", payAmount: "250,000원", proposerName: "상수 로스터리 결", partnerName: "나", proposerSign: "signed", proposerSignedAt: "2026-11-08" }) },
       { id: "pr4", partnerId: "p9", status: "received", createdAt: "2026-11-09", progress: 0, contract: base({ title: "독립출판 워크숍 공동 기획", scope: "4주 워크숍 커리큘럼 설계 및 진행", deliverables: "커리큘럼, 참가자 결과물 전시", startDate: "2026-12-01", endDate: "2026-12-28", payType: "share", payAmount: "참가비 수익 6:4", proposerName: "당인리 책방 쉼", partnerName: "나", proposerSign: "signed", proposerSignedAt: "2026-11-09" }) },
       { id: "pr5", partnerId: "p7", status: "done", createdAt: "2026-09-12", progress: 100, contract: base({ title: "주말 작가 팝업 마켓", scope: "매장 내 팝업 공간 운영", deliverables: "팝업 2회 진행", startDate: "2026-09-20", endDate: "2026-10-04", payType: "barter", payAmount: "공간 무상 제공 ↔ 굿즈 판매", partnerName: "망리단 빈티지샵", proposerSign: "signed", partnerSign: "signed" }) },
-      { id: "pr6", partnerId: "p10", status: "done", createdAt: "2026-08-03", progress: 100, contract: base({ title: "손글씨 메뉴판 제작", scope: "메뉴판 1종, 입간판 1종", deliverables: "실물 메뉴판, 디지털 파일", payAmount: "180,000원", partnerName: "캘리그라퍼 하린", proposerSign: "signed", partnerSign: "signed" }) },
+      { id: "pr6", partnerId: "p9", status: "done", createdAt: "2026-08-03", progress: 100, amount: 180000, payee: "me", contract: base({ title: "책방 북토크 포스터 일러스트", scope: "북토크 홍보 포스터 1종, SNS용 카드 3장", deliverables: "인쇄용 PDF, SNS 이미지", startDate: "2026-08-05", endDate: "2026-08-20", payAmount: "180,000원", partnerName: "당인리 책방 쉼", proposerSign: "signed", partnerSign: "signed" }) },
+      { id: "pr7", partnerId: "p1", status: "done", createdAt: "2026-07-01", progress: 100, amount: 220000, payee: "me", contract: base({ title: "소금빵집 3주년 기념 엽서", scope: "3주년 기념 엽서 2종 일러스트", deliverables: "인쇄용 PDF", startDate: "2026-07-03", endDate: "2026-07-18", payAmount: "220,000원", partnerName: "망원 소금빵집", proposerSign: "signed", partnerSign: "signed" }) },
     ],
+    posts: [
+      { id: "po1", title: "가게 캐릭터 · 굿즈 일러스트 해드려요", category: "디자인", skills: ["캐릭터 일러스트", "스티커 굿즈"], description: "가게 분위기에 맞는 캐릭터를 만들어 스티커·엽서 굿즈까지 이어드려요. 시안 2종, 수정 2회 포함이에요.", amount: 350000, payee: "me", duration: "2주", lookingFor: "owner", createdAt: "2026-11-05", status: "open" },
+    ],
+    settings: { notifyChat: true, notifyProposal: true, notifyMarketing: false, bank: "", account: "", area: "마포구 망원동" },
     threads: [
       { partnerId: "p1", unread: 2, messages: [
         { id: "m1", from: "them", text: "시안 잘 받았어요! 2번 색감이 정말 좋네요 🥐", time: "오후 2:10" },
@@ -93,6 +126,10 @@ type Store = State & {
   addProject: (p: Project) => void;
   updateProject: (id: string, patch: Partial<Omit<Project, "contract">> & { contract?: Partial<Contract> }) => void;
   removeProject: (id: string) => void;
+  addPost: (p: Post) => void;
+  updatePost: (id: string, patch: Partial<Post>) => void;
+  removePost: (id: string) => void;
+  setSettings: (p: Partial<Settings>) => void;
   sendMessage: (partnerId: string, text: string, from?: Message["from"]) => void;
   markRead: (partnerId: string) => void;
   reset: () => void;
@@ -123,7 +160,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setState(JSON.parse(raw) as State);
+      if (raw) setState({ ...seed(), ...(JSON.parse(raw) as Partial<State>) });
     } catch {
       /* ignore broken storage */
     }
@@ -147,6 +184,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
   const removeProject = useCallback((id: string) => setState((s) => ({ ...s, projects: s.projects.filter((p) => p.id !== id) })), []);
+  const addPost = useCallback((p: Post) => setState((s) => ({ ...s, posts: [p, ...s.posts] })), []);
+  const updatePost = useCallback((id: string, patch: Partial<Post>) => setState((s) => ({ ...s, posts: s.posts.map((p) => (p.id === id ? { ...p, ...patch } : p)) })), []);
+  const removePost = useCallback((id: string) => setState((s) => ({ ...s, posts: s.posts.filter((p) => p.id !== id) })), []);
+  const setSettings = useCallback((p: Partial<Settings>) => setState((s) => ({ ...s, settings: { ...s.settings, ...p } })), []);
   const sendMessage = useCallback((partnerId: string, text: string, from: Message["from"] = "me") => {
     setState((s) => {
       const msg: Message = { id: newId("m"), from, text, time: nowLabel() };
@@ -166,8 +207,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const reset = useCallback(() => setState(seed()), []);
 
   const value = useMemo<Store>(
-    () => ({ ...state, hydrated, setProfile, addProject, updateProject, removeProject, sendMessage, markRead, reset }),
-    [state, hydrated, setProfile, addProject, updateProject, removeProject, sendMessage, markRead, reset],
+    () => ({ ...state, hydrated, setProfile, addProject, updateProject, removeProject, addPost, updatePost, removePost, setSettings, sendMessage, markRead, reset }),
+    [state, hydrated, setProfile, addProject, updateProject, removeProject, addPost, updatePost, removePost, setSettings, sendMessage, markRead, reset],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

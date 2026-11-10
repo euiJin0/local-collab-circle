@@ -96,9 +96,8 @@ export type Grade = { name: string; min: number; emoji: string; desc: string };
 export const GRADES: Grade[] = [
   { name: "씨앗", min: 0, emoji: "🌰", desc: "콜라비를 막 시작했어요" },
   { name: "새싹", min: 40, emoji: "🌱", desc: "첫 콜라보를 키워가는 중" },
-  { name: "잎새", min: 60, emoji: "🍃", desc: "믿고 함께하는 파트너" },
-  { name: "꽃", min: 75, emoji: "🌸", desc: "동네에서 인정받는 콜라버" },
-  { name: "열매", min: 90, emoji: "🍇", desc: "최고의 콜라보 메이커" },
+  { name: "성장", min: 60, emoji: "🌿", desc: "믿고 함께하는 동네 파트너" },
+  { name: "콜라비", min: 80, emoji: "🥬", desc: "동네 최고의 콜라보 메이커" },
 ];
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));

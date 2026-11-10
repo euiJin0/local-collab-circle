@@ -10,19 +10,27 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EarningsRouteImport } from './routes/earnings'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as MyRouteImport } from './routes/my'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as RoleRouteImport } from './routes/role'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ChatIndexRouteImport } from './routes/chat.index'
 import { Route as ChatIdRouteImport } from './routes/chat.$id'
 import { Route as PartnerIdRouteImport } from './routes/partner.$id'
+import { Route as PostNewRouteImport } from './routes/post.new'
 import { Route as ProjectIdRouteImport } from './routes/project.$id'
 import { Route as ProposeIdRouteImport } from './routes/propose.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EarningsRoute = EarningsRouteImport.update({
+  id: '/earnings',
+  path: '/earnings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExploreRoute = ExploreRouteImport.update({
@@ -45,6 +53,11 @@ const RoleRoute = RoleRouteImport.update({
   path: '/role',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatIndexRoute = ChatIndexRouteImport.update({
   id: '/chat/',
   path: '/chat/',
@@ -60,6 +73,11 @@ const PartnerIdRoute = PartnerIdRouteImport.update({
   path: '/partner/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PostNewRoute = PostNewRouteImport.update({
+  id: '/post/new',
+  path: '/post/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProjectIdRoute = ProjectIdRouteImport.update({
   id: '/project/$id',
   path: '/project/$id',
@@ -73,24 +91,30 @@ const ProposeIdRoute = ProposeIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/earnings': typeof EarningsRoute
   '/explore': typeof ExploreRoute
   '/my': typeof MyRoute
   '/projects': typeof ProjectsRoute
   '/role': typeof RoleRoute
+  '/settings': typeof SettingsRoute
   '/chat/$id': typeof ChatIdRoute
   '/partner/$id': typeof PartnerIdRoute
+  '/post/new': typeof PostNewRoute
   '/project/$id': typeof ProjectIdRoute
   '/propose/$id': typeof ProposeIdRoute
   '/chat/': typeof ChatIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/earnings': typeof EarningsRoute
   '/explore': typeof ExploreRoute
   '/my': typeof MyRoute
   '/projects': typeof ProjectsRoute
   '/role': typeof RoleRoute
+  '/settings': typeof SettingsRoute
   '/chat/$id': typeof ChatIdRoute
   '/partner/$id': typeof PartnerIdRoute
+  '/post/new': typeof PostNewRoute
   '/project/$id': typeof ProjectIdRoute
   '/propose/$id': typeof ProposeIdRoute
   '/chat': typeof ChatIndexRoute
@@ -98,12 +122,15 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/earnings': typeof EarningsRoute
   '/explore': typeof ExploreRoute
   '/my': typeof MyRoute
   '/projects': typeof ProjectsRoute
   '/role': typeof RoleRoute
+  '/settings': typeof SettingsRoute
   '/chat/$id': typeof ChatIdRoute
   '/partner/$id': typeof PartnerIdRoute
+  '/post/new': typeof PostNewRoute
   '/project/$id': typeof ProjectIdRoute
   '/propose/$id': typeof ProposeIdRoute
   '/chat/': typeof ChatIndexRoute
@@ -112,36 +139,45 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/earnings'
     | '/explore'
     | '/my'
     | '/projects'
     | '/role'
+    | '/settings'
     | '/chat/$id'
     | '/partner/$id'
+    | '/post/new'
     | '/project/$id'
     | '/propose/$id'
     | '/chat/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/earnings'
     | '/explore'
     | '/my'
     | '/projects'
     | '/role'
+    | '/settings'
     | '/chat/$id'
     | '/partner/$id'
+    | '/post/new'
     | '/project/$id'
     | '/propose/$id'
     | '/chat'
   id:
     | '__root__'
     | '/'
+    | '/earnings'
     | '/explore'
     | '/my'
     | '/projects'
     | '/role'
+    | '/settings'
     | '/chat/$id'
     | '/partner/$id'
+    | '/post/new'
     | '/project/$id'
     | '/propose/$id'
     | '/chat/'
@@ -149,12 +185,15 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  EarningsRoute: typeof EarningsRoute
   ExploreRoute: typeof ExploreRoute
   MyRoute: typeof MyRoute
   ProjectsRoute: typeof ProjectsRoute
   RoleRoute: typeof RoleRoute
+  SettingsRoute: typeof SettingsRoute
   ChatIdRoute: typeof ChatIdRoute
   PartnerIdRoute: typeof PartnerIdRoute
+  PostNewRoute: typeof PostNewRoute
   ProjectIdRoute: typeof ProjectIdRoute
   ProposeIdRoute: typeof ProposeIdRoute
   ChatIndexRoute: typeof ChatIndexRoute
@@ -167,6 +206,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/earnings': {
+      id: '/earnings'
+      path: '/earnings'
+      fullPath: '/earnings'
+      preLoaderRoute: typeof EarningsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explore': {
@@ -197,6 +243,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RoleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/chat/': {
       id: '/chat/'
       path: '/chat'
@@ -218,6 +271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PartnerIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/post/new': {
+      id: '/post/new'
+      path: '/post/new'
+      fullPath: '/post/new'
+      preLoaderRoute: typeof PostNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/project/$id': {
       id: '/project/$id'
       path: '/project/$id'
@@ -237,12 +297,15 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  EarningsRoute: EarningsRoute,
   ExploreRoute: ExploreRoute,
   MyRoute: MyRoute,
   ProjectsRoute: ProjectsRoute,
   RoleRoute: RoleRoute,
+  SettingsRoute: SettingsRoute,
   ChatIdRoute: ChatIdRoute,
   PartnerIdRoute: PartnerIdRoute,
+  PostNewRoute: PostNewRoute,
   ProjectIdRoute: ProjectIdRoute,
   ProposeIdRoute: ProposeIdRoute,
   ChatIndexRoute: ChatIndexRoute,

@@ -1,6 +1,7 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeftRight, Info, RotateCcw } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Bell, ChevronRight, CreditCard, Info, Plus, Settings as SettingsIcon, Trash2, UserRound, Wallet } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { AppScreen } from "@/components/AppShell";
 import {
   COLABI_WEIGHTS,
@@ -13,15 +14,16 @@ import {
   ROLE_LABEL,
   type ColabiStats,
 } from "@/lib/colabi";
+import { earningsSummary, feeSplit, formatWon, PLATFORM_FEE_LABEL } from "@/lib/money";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/my")({
   head: () => ({
     meta: [
-      { title: "마이페이지 · 콜라비 지수 — 콜라비" },
-      { name: "description", content: "소통 점수와 완료 프로젝트로 매겨지는 나의 콜라비 지수와 등급을 확인하세요." },
-      { property: "og:title", content: "마이페이지 · 콜라비 지수 — 콜라비" },
-      { property: "og:description", content: "나의 콜라비 지수와 등급을 확인하세요." },
+      { title: "마이페이지 · 콜라비 지수와 수익 — 콜라비" },
+      { name: "description", content: "나의 콜라비 지수와 등급, 지금까지 받은 수익, 내가 올린 콜라보와 설정을 확인하세요." },
+      { property: "og:title", content: "마이페이지 · 콜라비 지수와 수익 — 콜라비" },
+      { property: "og:description", content: "콜라비 지수, 받은 수익, 내 콜라보 글을 한눈에." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -54,8 +56,7 @@ function Ring({ value }: { value: number }) {
 }
 
 function MyPage() {
-  const { profile, projects, setProfile, reset } = useStore();
-  const navigate = useNavigate();
+  const { profile, projects, posts, settings, updatePost, removePost } = useStore();
   const [showInfo, setShowInfo] = useState(false);
   const completed = projects.filter((p) => p.status === "done" && p.progress === 100).length;
   const ongoing = projects.filter((p) => p.status === "ongoing").length;
@@ -64,6 +65,7 @@ function MyPage() {
   const grade = colabiGrade(score);
   const next = nextGrade(score);
   const b = colabiBreakdown(stats);
+  const earn = earningsSummary(projects);
 
   const items = [
     { label: "소통 점수", value: `${stats.communication}점`, pct: b.communication, w: COLABI_WEIGHTS.communication },
@@ -73,9 +75,22 @@ function MyPage() {
   ];
 
   const role = profile.role;
+  const menu = [
+    { icon: UserRound, label: "프로필 · 역할 변경", sub: role ? ROLE_LABEL[role] : "역할 미선택" },
+    { icon: Bell, label: "알림 설정", sub: settings.notifyChat || settings.notifyProposal ? "켜짐" : "꺼짐" },
+    { icon: CreditCard, label: "정산 계좌", sub: settings.account ? `${settings.bank} ****${settings.account.slice(-4)}` : "미등록" },
+    { icon: SettingsIcon, label: "앱 설정 · 초기화", sub: "" },
+  ];
 
   return (
-    <AppScreen title="마이페이지">
+    <AppScreen
+      title="마이페이지"
+      right={
+        <Link to="/settings" aria-label="설정" className="rounded-full p-2 hover:bg-muted">
+          <SettingsIcon className="h-5 w-5" />
+        </Link>
+      }
+    >
       <div className="space-y-4 px-5 pb-8">
         <section className="flex items-center gap-4 rounded-3xl bg-card p-5 shadow-card">
           <div className={`flex h-16 w-16 items-center justify-center rounded-2xl text-3xl ${role === "owner" ? "bg-secondary" : "bg-primary"}`}>
@@ -83,16 +98,111 @@ function MyPage() {
           </div>
           <div className="flex-1">
             <p className="text-lg font-bold">{profile.nickname || "콜라비 유저"}</p>
-            <p className="text-sm text-muted-foreground">{role ? ROLE_LABEL[role] : "역할 미선택"} · 마포구 망원동</p>
+            <p className="text-sm text-muted-foreground">
+              {role ? ROLE_LABEL[role] : "역할 미선택"} · {settings.area}
+            </p>
+            <p className="mt-1 text-xs font-bold">
+              {grade.emoji} {grade.name} 등급
+            </p>
           </div>
-          <button
-            onClick={() => setProfile({ role: role === "creator" ? "owner" : "creator" })}
-            className="flex items-center gap-1 rounded-full bg-muted px-3 py-1.5 text-xs font-bold"
-          >
-            <ArrowLeftRight className="h-3.5 w-3.5" /> 역할 전환
-          </button>
+          <Link to="/settings" className="rounded-full bg-muted px-3 py-1.5 text-xs font-bold">
+            프로필 수정
+          </Link>
         </section>
 
+        {/* 수익 */}
+        <section className="rounded-3xl bg-card p-5 shadow-card">
+          <div className="flex items-center justify-between">
+            <h2 className="flex items-center gap-1.5 font-bold">
+              <Wallet className="h-4 w-4" /> 내 수익
+            </h2>
+            <Link to="/earnings" className="flex items-center text-xs text-muted-foreground">
+              전체 내역 <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">지금까지 받은 수익</p>
+          <p className="font-display text-3xl">{formatWon(earn.received.net)}</p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="rounded-2xl bg-accent p-3 text-accent-foreground">
+              <p className="text-[11px]">앞으로 받을 수익</p>
+              <p className="font-bold">{formatWon(earn.upcoming.net)}</p>
+              <p className="text-[10px] opacity-70">진행중 {earn.upcoming.count}건</p>
+            </div>
+            <div className="rounded-2xl bg-muted p-3">
+              <p className="text-[11px] text-muted-foreground">서명 대기 제안</p>
+              <p className="font-bold">{formatWon(earn.pending.net)}</p>
+              <p className="text-[10px] text-muted-foreground">{earn.pending.count}건</p>
+            </div>
+          </div>
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            금액은 콜라비 플랫폼 수수료 {PLATFORM_FEE_LABEL}를 뺀 실제 받는 금액이에요. (지금까지 낸 수수료 {formatWon(earn.received.fee)})
+          </p>
+        </section>
+
+        {/* 내 콜라보 글 */}
+        <section className="rounded-3xl bg-card p-5 shadow-card">
+          <div className="flex items-center justify-between">
+            <h2 className="font-bold">내가 올린 콜라보</h2>
+            <Link to="/post/new" className="flex items-center gap-1 rounded-full bg-brand px-3 py-1.5 text-xs font-bold">
+              <Plus className="h-3.5 w-3.5" /> 올리기
+            </Link>
+          </div>
+          <ul className="mt-3 space-y-2">
+            {posts.map((po) => {
+              const s = feeSplit(po.amount);
+              return (
+                <li key={po.id} className={`rounded-2xl border p-3 ${po.status === "closed" ? "opacity-60" : ""}`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold">{po.title}</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {po.category} · {po.duration} · {po.status === "open" ? "모집중" : "마감"}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        removePost(po.id);
+                        toast("글을 삭제했어요");
+                      }}
+                      aria-label={`${po.title} 삭제`}
+                      className="rounded-full p-1 text-muted-foreground hover:bg-muted"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {po.skills.map((sk) => (
+                      <span key={sk} className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold">
+                        #{sk}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-2 flex items-end justify-between text-xs">
+                    <span className="text-muted-foreground">
+                      {po.payee === "me" ? "제안" : "지급"} {formatWon(s.gross)} · 수수료 {formatWon(s.fee)}
+                    </span>
+                    <span className="font-bold">
+                      {po.payee === "me" ? "받을 금액" : "파트너 수령"} {formatWon(s.net)}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => updatePost(po.id, { status: po.status === "open" ? "closed" : "open" })}
+                    className="mt-2 text-[11px] text-muted-foreground underline"
+                  >
+                    {po.status === "open" ? "모집 마감하기" : "다시 모집하기"}
+                  </button>
+                </li>
+              );
+            })}
+            {posts.length === 0 && (
+              <li className="rounded-2xl bg-muted p-4 text-center text-xs text-muted-foreground">
+                아직 올린 콜라보가 없어요. 쓸 재능과 제안 금액을 올려보세요!
+              </li>
+            )}
+          </ul>
+        </section>
+
+        {/* 콜라비 지수 */}
         <section className="overflow-hidden rounded-3xl bg-glow p-5 shadow-soft">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-xl">콜라비 지수</h2>
@@ -142,10 +252,10 @@ function MyPage() {
             </div>
           )}
 
-          <div className="mt-4 flex justify-between">
+          <div className="mt-4 grid grid-cols-4">
             {GRADES.map((g) => (
-              <div key={g.name} className={`flex flex-col items-center text-[10px] ${g.name === grade.name ? "font-bold" : "text-muted-foreground opacity-60"}`}>
-                <span className={`flex h-9 w-9 items-center justify-center rounded-full text-lg ${g.name === grade.name ? "bg-card shadow-card" : ""}`}>{g.emoji}</span>
+              <div key={g.name} className={`flex flex-col items-center text-[11px] ${g.name === grade.name ? "font-bold" : "text-muted-foreground opacity-60"}`}>
+                <span className={`flex h-10 w-10 items-center justify-center rounded-full text-xl ${g.name === grade.name ? "bg-card shadow-card" : ""}`}>{g.emoji}</span>
                 {g.name}
                 <span>{g.min}+</span>
               </div>
@@ -166,15 +276,22 @@ function MyPage() {
           ))}
         </section>
 
-        <button
-          onClick={() => {
-            reset();
-            navigate({ to: "/" });
-          }}
-          className="flex w-full items-center justify-center gap-1.5 rounded-2xl border py-3 text-sm text-muted-foreground"
-        >
-          <RotateCcw className="h-4 w-4" /> 처음부터 다시 시작 (예시 데이터 초기화)
-        </button>
+        {/* 설정 */}
+        <section>
+          <h2 className="mb-2 px-1 text-xs font-bold text-muted-foreground">설정</h2>
+          <ul className="divide-y overflow-hidden rounded-2xl border bg-card shadow-card">
+            {menu.map(({ icon: Icon, label, sub }) => (
+              <li key={label}>
+                <Link to="/settings" className="flex items-center gap-3 px-4 py-3.5 text-sm hover:bg-muted">
+                  <Icon className="h-4 w-4 text-muted-foreground" />
+                  <span className="flex-1 font-medium">{label}</span>
+                  {sub && <span className="text-xs text-muted-foreground">{sub}</span>}
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
     </AppScreen>
   );

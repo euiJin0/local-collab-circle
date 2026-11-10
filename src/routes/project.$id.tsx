@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { PhoneFrame, SubHeader } from "@/components/AppShell";
 import { ContractDocument } from "@/components/ContractDocument";
+import { FeeBreakdown } from "@/components/FeeBreakdown";
 import { PartnerAvatar, RoleBadge } from "@/components/PartnerBits";
 import { SignaturePad } from "@/components/SignaturePad";
 import { getPartner } from "@/lib/colabi";
@@ -103,6 +104,13 @@ function ProjectDetail() {
             />
           </div>
         )}
+
+        {pr.amount && pr.payee ? (
+          <div>
+            <p className="mb-2 text-sm font-bold">{pr.status === "done" ? "정산 내역" : "정산 예정 금액"}</p>
+            <FeeBreakdown amount={pr.amount} payee={pr.payee} />
+          </div>
+        ) : null}
 
         <ContractDocument c={pr.contract} />
 

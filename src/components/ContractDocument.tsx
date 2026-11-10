@@ -1,3 +1,4 @@
+import { PLATFORM_FEE_LABEL } from "@/lib/money";
 import type { Contract } from "@/lib/store";
 
 export const PAY_LABEL = { fixed: "고정 금액", share: "수익 배분", barter: "물물교환/현물" } as const;
@@ -33,6 +34,7 @@ export function ContractDocument({ c }: { c: Contract }) {
     ["결과물", c.deliverables || "—"],
     ["기간", `${c.startDate} ~ ${c.endDate}`],
     ["보상 방식", `${PAY_LABEL[c.payType]} · ${c.payAmount || "협의"}`],
+    ["수수료", `거래 금액의 ${PLATFORM_FEE_LABEL}는 콜라비 플랫폼 수수료로, 대금을 받는 쪽 정산 금액에서 차감`],
     ["수정 횟수", `최대 ${c.revisions}회`],
     ["저작권", COPYRIGHT_LABEL[c.copyright]],
     ["취소·위약", c.cancelTerms || "—"],
