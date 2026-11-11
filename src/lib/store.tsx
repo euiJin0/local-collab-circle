@@ -16,7 +16,7 @@ export type Contract = {
   /** 예상 콜라보 매출(원) */
   revenue: number;
   /** 직접 제안한 창작자 몫(%). 없으면 분야 기본 비율 */
-  creatorPct?: number;
+  creatorPct?: number | undefined;
   revisions: number;
   copyright: Copyright;
   cancelTerms: string;
@@ -47,7 +47,7 @@ export type Post = {
   /** 예상 콜라보 매출(원) */
   amount: number;
   /** 직접 제안한 창작자 몫(%). 없으면 분야 기본 비율 */
-  creatorPct?: number;
+  creatorPct?: number | undefined;
   duration: string;
   lookingFor: Role;
   createdAt: string;

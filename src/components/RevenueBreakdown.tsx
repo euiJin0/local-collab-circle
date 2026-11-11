@@ -13,7 +13,7 @@ export function RevenueBreakdown({
   amount: number;
   category: string;
   role: Role | null;
-  creatorPct?: number;
+  creatorPct?: number | undefined;
   label?: string;
 }) {
   const s = revenueSplit(amount, category, creatorPct);
