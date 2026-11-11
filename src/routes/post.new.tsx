@@ -3,7 +3,7 @@ import { ChevronLeft, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { PhoneFrame, SubHeader } from "@/components/AppShell";
-import { RevenueBreakdown } from "@/components/RevenueBreakdown";
+import { RevenueBreakdown, ShareProposer } from "@/components/RevenueBreakdown";
 import { CATEGORIES, ROLE_LABEL } from "@/lib/colabi";
 import { formatWon, parseWon } from "@/lib/money";
 import { newId, todayISO, useStore } from "@/lib/store";
@@ -36,6 +36,7 @@ function NewPost() {
   const [skillInput, setSkillInput] = useState("");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState(0);
+  const [creatorPct, setCreatorPct] = useState<number | undefined>(undefined);
   const [duration, setDuration] = useState(DURATIONS[1]!);
 
   const addSkill = () => {
@@ -54,6 +55,7 @@ function NewPost() {
       skills,
       description: description.trim(),
       amount,
+      creatorPct,
       duration,
       lookingFor: isOwner ? "creator" : "owner",
       createdAt: todayISO(),
@@ -177,7 +179,8 @@ function NewPost() {
           </div>
         </div>
 
-        <RevenueBreakdown amount={amount} category={category} role={profile.role} />
+        <ShareProposer category={category} value={creatorPct} onChange={setCreatorPct} />
+        <RevenueBreakdown amount={amount} category={category} creatorPct={creatorPct} role={profile.role} />
       </div>
 
       <div className="fixed bottom-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 border-t bg-card p-4">

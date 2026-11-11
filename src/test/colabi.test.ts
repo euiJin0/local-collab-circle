@@ -51,6 +51,15 @@ describe("수익 배분 (플랫폼 8% 고정)", () => {
     }
   });
 
+  it("lets a custom creator share be proposed while the 8% fee stays fixed", () => {
+    expect(revenueSplit(1000000, "디자인", 30)).toEqual({ gross: 1000000, owner: 620000, creator: 300000, fee: 80000 });
+    expect(revenueSplit(1000000, "디자인", 100)).toEqual({ gross: 1000000, owner: 0, creator: 920000, fee: 80000 });
+    expect(revenueSplit(1000000, "디자인", -5)).toEqual({ gross: 1000000, owner: 920000, creator: 0, fee: 80000 });
+    const p = { id: "x", partnerId: "p1", status: "done", createdAt: "", progress: 0, contract: { revenue: 1000000, category: "디자인", creatorPct: 40 } } as unknown as Project;
+    expect(earningsSummary([p], "creator").received.net).toBe(400000);
+    expect(earningsSummary([p], "owner").received.net).toBe(520000);
+  });
+
   it("sums my share by role: received (완료) and upcoming (진행중)", () => {
     const mk = (status: Project["status"], revenue: number, category: string): Project =>
       ({ id: status + revenue, partnerId: "p1", status, createdAt: "", progress: 0, contract: { revenue, category } as Project["contract"] }) as Project;

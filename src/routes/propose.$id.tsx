@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { PhoneFrame, SubHeader } from "@/components/AppShell";
 import { ContractDocument, COPYRIGHT_LABEL } from "@/components/ContractDocument";
 import { PartnerAvatar } from "@/components/PartnerBits";
-import { RevenueBreakdown } from "@/components/RevenueBreakdown";
+import { RevenueBreakdown, ShareProposer } from "@/components/RevenueBreakdown";
 import { SignaturePad } from "@/components/SignaturePad";
 import { CATEGORIES, getPartner } from "@/lib/colabi";
 import { parseWon } from "@/lib/money";
@@ -171,7 +171,8 @@ function ProposePage() {
               </div>
               <p className="mt-1 text-[11px] text-muted-foreground">콜라보로 가게에서 생길 것으로 예상되는 매출이에요. 정산은 실제 매출 기준으로 해요.</p>
             </div>
-            <RevenueBreakdown amount={c.revenue} category={c.category} role={profile.role} />
+            <ShareProposer category={c.category} value={c.creatorPct} onChange={(v) => set("creatorPct", v)} />
+            <RevenueBreakdown amount={c.revenue} category={c.category} creatorPct={c.creatorPct} role={profile.role} />
             <div>
               <label className={label} htmlFor="rev">수정 횟수: {c.revisions}회</label>
               <input id="rev" type="range" min={0} max={5} value={c.revisions} onChange={(e) => set("revisions", Number(e.target.value))} className="w-full accent-[var(--primary-strong)]" />

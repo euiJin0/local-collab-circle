@@ -69,7 +69,7 @@ function EarningsPage() {
 
         <ul className="space-y-2">
           {items.map((p) => {
-            const s = revenueSplit(p.contract.revenue, p.contract.category);
+            const s = revenueSplit(p.contract.revenue, p.contract.category, p.contract.creatorPct);
             const partner = getPartner(p.partnerId);
             return (
               <li key={p.id}>
@@ -85,7 +85,7 @@ function EarningsPage() {
                   </div>
                   <div className="mt-3 flex items-end justify-between text-xs text-muted-foreground">
                     <span>
-                      {p.contract.category} · 매출 {formatWon(s.gross)} · 내 몫 {pct(myRate(p.contract.category, profile.role))}
+                      {p.contract.category} · 매출 {formatWon(s.gross)} · 내 몫 {pct(myRate(p.contract.category, profile.role, p.contract.creatorPct))}
                     </span>
                     <span className="font-display text-lg text-foreground">{formatWon(myShare(s, profile.role))}</span>
                   </div>

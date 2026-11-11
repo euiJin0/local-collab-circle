@@ -149,7 +149,7 @@ function MyPage() {
           </div>
           <ul className="mt-3 space-y-2">
             {posts.map((po) => {
-              const s = revenueSplit(po.amount, po.category);
+              const s = revenueSplit(po.amount, po.category, po.creatorPct);
               return (
                 <li key={po.id} className={`rounded-2xl border p-3 ${po.status === "closed" ? "opacity-60" : ""}`}>
                   <div className="flex items-start justify-between gap-2">
@@ -179,7 +179,7 @@ function MyPage() {
                   </div>
                   <div className="mt-2 flex items-end justify-between text-xs">
                     <span className="text-muted-foreground">
-                      예상 매출 {formatWon(s.gross)} · 내 몫 {pct(myRate(po.category, profile.role))}
+                      예상 매출 {formatWon(s.gross)} · 내 몫 {pct(myRate(po.category, profile.role, po.creatorPct))}
                     </span>
                     <span className="font-bold">
                       받을 금액 {formatWon(myShare(s, profile.role))}
