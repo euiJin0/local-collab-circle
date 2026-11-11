@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { PhoneFrame, SubHeader } from "@/components/AppShell";
 import { ROLE_LABEL, type Role } from "@/lib/colabi";
+import { RevenueShareTable } from "@/components/RevenueBreakdown";
 import { PLATFORM_FEE_LABEL } from "@/lib/money";
 import { useStore, type Settings } from "@/lib/store";
 
@@ -138,16 +139,22 @@ function SettingsPage() {
             >
               계좌 저장
             </button>
-            <p className="text-[11px] text-muted-foreground">완료된 프로젝트 대금은 수수료 {PLATFORM_FEE_LABEL}를 뺀 금액으로 이 계좌에 정산돼요.</p>
+            <p className="text-[11px] text-muted-foreground">프로젝트가 완료되면 콜라보 매출 중 내 몫이 이 계좌로 정산돼요.</p>
           </div>
         </section>
 
         <section>
           <h2 className={h}>정보</h2>
           <div className={`${card} divide-y text-sm`}>
-            <div className="flex justify-between px-4 py-3.5">
-              <span>플랫폼 수수료</span>
-              <span className="text-muted-foreground">거래 금액의 {PLATFORM_FEE_LABEL}</span>
+            <div className="px-4 py-3.5">
+              <div className="flex justify-between">
+                <span>수익 배분 기준</span>
+                <span className="text-muted-foreground">콜라비 수수료 {PLATFORM_FEE_LABEL} 고정</span>
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">콜라보 매출은 창작자가 맡는 분야에 따라 이렇게 나눠요.</p>
+              <div className="mt-2">
+                <RevenueShareTable />
+              </div>
             </div>
             <div className="flex justify-between px-4 py-3.5">
               <span>앱 버전</span>

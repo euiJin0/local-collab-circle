@@ -2,14 +2,14 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import { PhoneFrame, SubHeader } from "@/components/AppShell";
 import { getPartner } from "@/lib/colabi";
-import { earningsSummary, feeSplit, formatWon, PLATFORM_FEE_LABEL } from "@/lib/money";
+import { earningsSummary, formatWon, myRate, myShare, pct, PLATFORM_FEE_LABEL, revenueSplit } from "@/lib/money";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/earnings")({
   head: () => ({
     meta: [
       { title: "수익 내역 — 콜라비" },
-      { name: "description", content: "지금까지 받은 수익과 정산 예정 수익을 플랫폼 수수료 8%를 뺀 금액으로 확인하세요." },
+      { name: "description", content: "지금까지 받은 수익과 정산 예정 수익을 분야별 배분 비율에 따른 내 몫으로 확인하세요." },
       { property: "og:title", content: "수익 내역 — 콜라비" },
       { property: "og:description", content: "받은 수익과 앞으로 받을 수익을 한눈에 확인하세요." },
       { property: "og:type", content: "website" },
@@ -22,11 +22,11 @@ export const Route = createFileRoute("/earnings")({
 const STATUS = { done: "정산 완료", ongoing: "정산 예정", received: "서명 대기", sent: "서명 대기" } as const;
 
 function EarningsPage() {
-  const { projects, settings } = useStore();
+  const { projects, settings, profile } = useStore();
   const router = useRouter();
-  const sum = earningsSummary(projects);
+  const sum = earningsSummary(projects, profile.role);
   const items = projects
-    .filter((p) => p.payee === "me" && p.amount)
+    .filter((p) => p.contract.revenue > 0)
     .sort((a, b) => (a.status === b.status ? b.createdAt.localeCompare(a.createdAt) : a.status === "done" ? 1 : -1));
 
   return (
@@ -44,7 +44,7 @@ function EarningsPage() {
           <p className="text-sm text-muted-foreground">지금까지 받은 수익</p>
           <p className="font-display text-4xl">{formatWon(sum.received.net)}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            총 거래 {formatWon(sum.received.gross)} − 수수료 {formatWon(sum.received.fee)} · {sum.received.count}건
+            총 콜라보 매출 {formatWon(sum.received.gross)} 중 내 몫 · {sum.received.count}건
           </p>
           <div className="mt-4 grid grid-cols-2 gap-2">
             <div className="rounded-2xl bg-card p-3">
@@ -59,7 +59,7 @@ function EarningsPage() {
         </section>
 
         <p className="rounded-2xl bg-muted p-3 text-xs leading-relaxed text-muted-foreground">
-          모든 금액은 콜라비 플랫폼 수수료 {PLATFORM_FEE_LABEL}를 뺀 실제로 받는 금액이에요. 프로젝트가 완료되면 {settings.account ? `${settings.bank} ${settings.account}` : "등록한 정산 계좌"}로 정산돼요.
+          모든 금액은 콜라보 매출을 분야별 비율로 나눈 내 몫이에요. 콜라비 수수료는 매출의 {PLATFORM_FEE_LABEL}로 고정이에요. 프로젝트가 완료되면 {settings.account ? `${settings.bank} ${settings.account}` : "등록한 정산 계좌"}로 정산돼요.
           {!settings.account && (
             <Link to="/settings" className="ml-1 font-bold text-foreground underline">
               계좌 등록하기
@@ -69,7 +69,7 @@ function EarningsPage() {
 
         <ul className="space-y-2">
           {items.map((p) => {
-            const s = feeSplit(p.amount!);
+            const s = revenueSplit(p.contract.revenue, p.contract.category);
             const partner = getPartner(p.partnerId);
             return (
               <li key={p.id}>
@@ -85,9 +85,9 @@ function EarningsPage() {
                   </div>
                   <div className="mt-3 flex items-end justify-between text-xs text-muted-foreground">
                     <span>
-                      {formatWon(s.gross)} − 수수료 {formatWon(s.fee)}
+                      {p.contract.category} · 매출 {formatWon(s.gross)} · 내 몫 {pct(myRate(p.contract.category, profile.role))}
                     </span>
-                    <span className="font-display text-lg text-foreground">{formatWon(s.net)}</span>
+                    <span className="font-display text-lg text-foreground">{formatWon(myShare(s, profile.role))}</span>
                   </div>
                 </Link>
               </li>

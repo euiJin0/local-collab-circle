@@ -3,11 +3,13 @@ import { ChevronLeft } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { PhoneFrame, SubHeader } from "@/components/AppShell";
-import { ContractDocument, COPYRIGHT_LABEL, PAY_LABEL } from "@/components/ContractDocument";
+import { ContractDocument, COPYRIGHT_LABEL } from "@/components/ContractDocument";
 import { PartnerAvatar } from "@/components/PartnerBits";
+import { RevenueBreakdown } from "@/components/RevenueBreakdown";
 import { SignaturePad } from "@/components/SignaturePad";
-import { getPartner } from "@/lib/colabi";
-import { newId, todayISO, useStore, type Contract, type Copyright, type PayType } from "@/lib/store";
+import { CATEGORIES, getPartner } from "@/lib/colabi";
+import { parseWon } from "@/lib/money";
+import { newId, todayISO, useStore, type Contract, type Copyright } from "@/lib/store";
 
 export const Route = createFileRoute("/propose/$id")({
   loader: ({ params }) => {
@@ -47,8 +49,8 @@ function ProposePage() {
     deliverables: "",
     startDate: todayISO(),
     endDate: todayISO(),
-    payType: "fixed",
-    payAmount: "",
+    category: (CATEGORIES as readonly string[]).includes(partner.category) ? partner.category : CATEGORIES[0],
+    revenue: 0,
     revisions: 2,
     copyright: "shared",
     cancelTerms: "착수 전 취소 시 위약금 없음, 착수 후 취소 시 진행분 정산",
@@ -58,7 +60,7 @@ function ProposePage() {
   const set = <K extends keyof Contract>(k: K, v: Contract[K]) => setC((s) => ({ ...s, [k]: v }));
 
   const step0ok = c.title.trim().length > 0 && c.scope.trim().length > 0;
-  const step1ok = c.endDate >= c.startDate && c.payAmount.trim().length > 0;
+  const step1ok = c.endDate >= c.startDate && c.revenue > 0;
   const canNext = step === 0 ? step0ok : step === 1 ? step1ok : agree && !!sign;
 
   const submit = () => {
@@ -144,23 +146,32 @@ function ProposePage() {
             </div>
             {c.endDate < c.startDate && <p className="text-xs text-destructive">종료일은 시작일 이후여야 해요.</p>}
             <div>
-              <p className={label}>보상 방식</p>
-              <div className="grid grid-cols-3 gap-2">
-                {(Object.keys(PAY_LABEL) as PayType[]).map((k) => (
-                  <button key={k} type="button" onClick={() => set("payType", k)} className={`rounded-xl py-2.5 text-sm font-bold ${c.payType === k ? "bg-foreground text-background" : "bg-muted text-muted-foreground"}`}>
-                    {PAY_LABEL[k]}
+              <p className={label}>창작자가 맡는 분야</p>
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map((k) => (
+                  <button key={k} type="button" onClick={() => set("category", k)} className={`rounded-full px-3 py-1.5 text-xs font-bold ${c.category === k ? "bg-foreground text-background" : "bg-muted text-muted-foreground"}`}>
+                    {k}
                   </button>
                 ))}
               </div>
-              <input
-                aria-label="보상 내용"
-                maxLength={60}
-                className={`${field} mt-2`}
-                placeholder={c.payType === "fixed" ? "예: 300,000원" : c.payType === "share" ? "예: 수익 5:5" : "예: 빵 한 달 무료 제공"}
-                value={c.payAmount}
-                onChange={(e) => set("payAmount", e.target.value)}
-              />
+              <p className="mt-1 text-[11px] text-muted-foreground">분야에 따라 소상공인과 창작자의 수익 배분 비율이 정해져요.</p>
             </div>
+            <div>
+              <label className={label} htmlFor="revenue">예상 콜라보 매출</label>
+              <div className="relative">
+                <input
+                  id="revenue"
+                  inputMode="numeric"
+                  className={`${field} pr-10 text-right text-lg font-bold`}
+                  placeholder="0"
+                  value={c.revenue ? c.revenue.toLocaleString("ko-KR") : ""}
+                  onChange={(e) => set("revenue", Math.min(parseWon(e.target.value), 1000000000))}
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">원</span>
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">콜라보로 가게에서 생길 것으로 예상되는 매출이에요. 정산은 실제 매출 기준으로 해요.</p>
+            </div>
+            <RevenueBreakdown amount={c.revenue} category={c.category} role={profile.role} />
             <div>
               <label className={label} htmlFor="rev">수정 횟수: {c.revisions}회</label>
               <input id="rev" type="range" min={0} max={5} value={c.revisions} onChange={(e) => set("revisions", Number(e.target.value))} className="w-full accent-[var(--primary-strong)]" />

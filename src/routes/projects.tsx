@@ -3,6 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { AppScreen } from "@/components/AppShell";
 import { PartnerAvatar } from "@/components/PartnerBits";
 import { getPartner } from "@/lib/colabi";
+import { formatWon } from "@/lib/money";
 import { useStore, type ProjectStatus } from "@/lib/store";
 
 const TABS: { key: ProjectStatus; label: string }[] = [
@@ -90,7 +91,7 @@ function ProjectsPage() {
                   </div>
                 )}
                 {pr.status === "received" && (
-                  <p className="mt-3 rounded-xl bg-accent px-3 py-2 text-xs font-bold text-accent-foreground">📄 계약서 확인 후 서명이 필요해요 · {pr.contract.payAmount}</p>
+                  <p className="mt-3 rounded-xl bg-accent px-3 py-2 text-xs font-bold text-accent-foreground">📄 계약서 확인 후 서명이 필요해요 · {pr.contract.category} · 예상 매출 {formatWon(pr.contract.revenue)}</p>
                 )}
                 {pr.status === "sent" && <p className="mt-3 rounded-xl bg-muted px-3 py-2 text-xs text-muted-foreground">⏳ 상대방의 서명을 기다리는 중</p>}
                 {pr.status === "done" && <p className="mt-3 rounded-xl bg-primary/50 px-3 py-2 text-xs font-bold">✓ 계약 이행 완료</p>}

@@ -1,7 +1,6 @@
-import { PLATFORM_FEE_LABEL } from "@/lib/money";
+import { formatWon, pct, PLATFORM_FEE_LABEL, shareOf } from "@/lib/money";
 import type { Contract } from "@/lib/store";
 
-export const PAY_LABEL = { fixed: "고정 금액", share: "수익 배분", barter: "물물교환/현물" } as const;
 export const COPYRIGHT_LABEL = {
   owner: "소상공인(의뢰자)에게 귀속",
   creator: "창작자에게 귀속, 사용권 허락",
@@ -28,13 +27,15 @@ function Sign({ name, sign, at }: { name: string; sign: string | undefined; at: 
 }
 
 export function ContractDocument({ c }: { c: Contract }) {
+  const sh = shareOf(c.category);
   const rows: [string, string][] = [
     ["프로젝트명", c.title || "—"],
     ["작업 범위", c.scope || "—"],
     ["결과물", c.deliverables || "—"],
     ["기간", `${c.startDate} ~ ${c.endDate}`],
-    ["보상 방식", `${PAY_LABEL[c.payType]} · ${c.payAmount || "협의"}`],
-    ["수수료", `거래 금액의 ${PLATFORM_FEE_LABEL}는 콜라비 플랫폼 수수료로, 대금을 받는 쪽 정산 금액에서 차감`],
+    ["분야", c.category],
+    ["예상 매출", c.revenue ? formatWon(c.revenue) : "협의"],
+    ["수익 배분", `콜라보 매출을 소상공인 ${pct(sh.owner)} · 창작자 ${pct(sh.creator)} · 콜라비 수수료 ${PLATFORM_FEE_LABEL}(고정)로 배분하며, 실제 매출 기준으로 프로젝트 완료 후 정산`],
     ["수정 횟수", `최대 ${c.revisions}회`],
     ["저작권", COPYRIGHT_LABEL[c.copyright]],
     ["취소·위약", c.cancelTerms || "—"],

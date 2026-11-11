@@ -14,7 +14,7 @@ import {
   ROLE_LABEL,
   type ColabiStats,
 } from "@/lib/colabi";
-import { earningsSummary, feeSplit, formatWon, PLATFORM_FEE_LABEL } from "@/lib/money";
+import { earningsSummary, formatWon, myRate, myShare, pct, PLATFORM_FEE_LABEL, revenueSplit } from "@/lib/money";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/my")({
@@ -65,7 +65,7 @@ function MyPage() {
   const grade = colabiGrade(score);
   const next = nextGrade(score);
   const b = colabiBreakdown(stats);
-  const earn = earningsSummary(projects);
+  const earn = earningsSummary(projects, profile.role);
 
   const items = [
     { label: "소통 점수", value: `${stats.communication}점`, pct: b.communication, w: COLABI_WEIGHTS.communication },
@@ -135,7 +135,7 @@ function MyPage() {
             </div>
           </div>
           <p className="mt-3 text-[11px] text-muted-foreground">
-            금액은 콜라비 플랫폼 수수료 {PLATFORM_FEE_LABEL}를 뺀 실제 받는 금액이에요. (지금까지 낸 수수료 {formatWon(earn.received.fee)})
+            콜라보 매출 중 분야별 배분 비율에 따른 내 몫이에요. 콜라비 수수료는 매출의 {PLATFORM_FEE_LABEL}로 고정이에요.
           </p>
         </section>
 
@@ -149,7 +149,7 @@ function MyPage() {
           </div>
           <ul className="mt-3 space-y-2">
             {posts.map((po) => {
-              const s = feeSplit(po.amount);
+              const s = revenueSplit(po.amount, po.category);
               return (
                 <li key={po.id} className={`rounded-2xl border p-3 ${po.status === "closed" ? "opacity-60" : ""}`}>
                   <div className="flex items-start justify-between gap-2">
@@ -179,10 +179,10 @@ function MyPage() {
                   </div>
                   <div className="mt-2 flex items-end justify-between text-xs">
                     <span className="text-muted-foreground">
-                      {po.payee === "me" ? "제안" : "지급"} {formatWon(s.gross)} · 수수료 {formatWon(s.fee)}
+                      예상 매출 {formatWon(s.gross)} · 내 몫 {pct(myRate(po.category, profile.role))}
                     </span>
                     <span className="font-bold">
-                      {po.payee === "me" ? "받을 금액" : "파트너 수령"} {formatWon(s.net)}
+                      받을 금액 {formatWon(myShare(s, profile.role))}
                     </span>
                   </div>
                   <button
@@ -196,7 +196,7 @@ function MyPage() {
             })}
             {posts.length === 0 && (
               <li className="rounded-2xl bg-muted p-4 text-center text-xs text-muted-foreground">
-                아직 올린 콜라보가 없어요. 쓸 재능과 제안 금액을 올려보세요!
+                아직 올린 콜라보가 없어요. 쓸 재능과 예상 매출을 올려보세요!
               </li>
             )}
           </ul>

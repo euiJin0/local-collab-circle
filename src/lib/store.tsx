@@ -3,7 +3,6 @@ import type { Role } from "./colabi";
 
 export type ProjectStatus = "ongoing" | "received" | "sent" | "done";
 
-export type PayType = "fixed" | "share" | "barter";
 export type Copyright = "owner" | "creator" | "shared";
 
 export type Contract = {
@@ -12,8 +11,10 @@ export type Contract = {
   deliverables: string;
   startDate: string;
   endDate: string;
-  payType: PayType;
-  payAmount: string;
+  /** 콜라보 분야 (분야별 수익 배분 비율이 정해짐) */
+  category: string;
+  /** 예상 콜라보 매출(원) */
+  revenue: number;
   revisions: number;
   copyright: Copyright;
   cancelTerms: string;
@@ -31,10 +32,6 @@ export type Project = {
   status: ProjectStatus;
   createdAt: string;
   progress: number;
-  /** 고정 금액(원). 수익 배분/현물이면 없음 */
-  amount?: number;
-  /** 대금을 받는 쪽 */
-  payee?: "me" | "partner";
   contract: Contract;
 };
 
@@ -45,8 +42,8 @@ export type Post = {
   category: string;
   skills: string[];
   description: string;
+  /** 예상 콜라보 매출(원) */
   amount: number;
-  payee: "me" | "partner";
   duration: string;
   lookingFor: Role;
   createdAt: string;
@@ -69,7 +66,7 @@ type Profile = { nickname: string; role: Role | null };
 
 type State = { profile: Profile; projects: Project[]; threads: Thread[]; posts: Post[]; settings: Settings };
 
-const STORAGE_KEY = "colabi-state-v2";
+const STORAGE_KEY = "colabi-state-v3";
 
 function seed(): State {
   const base = (over: Partial<Contract>): Contract => ({
@@ -78,8 +75,8 @@ function seed(): State {
     deliverables: "",
     startDate: "2026-11-01",
     endDate: "2026-11-30",
-    payType: "fixed",
-    payAmount: "300,000원",
+    category: "디자인",
+    revenue: 0,
     revisions: 2,
     copyright: "shared",
     cancelTerms: "착수 전 취소 시 위약금 없음, 착수 후 취소 시 진행분 정산",
@@ -90,16 +87,16 @@ function seed(): State {
   return {
     profile: { nickname: "", role: null },
     projects: [
-      { id: "pr1", partnerId: "p1", status: "ongoing", createdAt: "2026-10-28", progress: 60, amount: 300000, payee: "me", contract: base({ title: "소금빵 포장 스티커 디자인", scope: "포장 스티커 3종 디자인", deliverables: "AI 원본 파일, 인쇄용 PDF", partnerName: "망원 소금빵집", proposerSign: "signed", partnerSign: "signed", proposerSignedAt: "2026-10-28", partnerSignedAt: "2026-10-29" }) },
-      { id: "pr2", partnerId: "p3", status: "ongoing", createdAt: "2026-11-02", progress: 25, contract: base({ title: "꽃 × 캘리 원데이 클래스", scope: "주말 원데이 클래스 2회 공동 운영", deliverables: "클래스 커리큘럼, 홍보 포스터", payType: "share", payAmount: "수익 5:5", partnerName: "연남 꽃집 들꽃", proposerSign: "signed", partnerSign: "signed", proposerSignedAt: "2026-11-02", partnerSignedAt: "2026-11-03" }) },
-      { id: "pr3", partnerId: "p5", status: "received", createdAt: "2026-11-08", progress: 0, amount: 250000, payee: "me", contract: base({ title: "로스팅 과정 숏폼 3편", scope: "로스팅 과정을 담은 30초 숏폼 영상 3편 촬영·편집", deliverables: "세로형 MP4 3편", startDate: "2026-11-15", endDate: "2026-12-05", payAmount: "250,000원", proposerName: "상수 로스터리 결", partnerName: "나", proposerSign: "signed", proposerSignedAt: "2026-11-08" }) },
-      { id: "pr4", partnerId: "p9", status: "received", createdAt: "2026-11-09", progress: 0, contract: base({ title: "독립출판 워크숍 공동 기획", scope: "4주 워크숍 커리큘럼 설계 및 진행", deliverables: "커리큘럼, 참가자 결과물 전시", startDate: "2026-12-01", endDate: "2026-12-28", payType: "share", payAmount: "참가비 수익 6:4", proposerName: "당인리 책방 쉼", partnerName: "나", proposerSign: "signed", proposerSignedAt: "2026-11-09" }) },
-      { id: "pr5", partnerId: "p7", status: "done", createdAt: "2026-09-12", progress: 100, contract: base({ title: "주말 작가 팝업 마켓", scope: "매장 내 팝업 공간 운영", deliverables: "팝업 2회 진행", startDate: "2026-09-20", endDate: "2026-10-04", payType: "barter", payAmount: "공간 무상 제공 ↔ 굿즈 판매", partnerName: "망리단 빈티지샵", proposerSign: "signed", partnerSign: "signed" }) },
-      { id: "pr6", partnerId: "p9", status: "done", createdAt: "2026-08-03", progress: 100, amount: 180000, payee: "me", contract: base({ title: "책방 북토크 포스터 일러스트", scope: "북토크 홍보 포스터 1종, SNS용 카드 3장", deliverables: "인쇄용 PDF, SNS 이미지", startDate: "2026-08-05", endDate: "2026-08-20", payAmount: "180,000원", partnerName: "당인리 책방 쉼", proposerSign: "signed", partnerSign: "signed" }) },
-      { id: "pr7", partnerId: "p1", status: "done", createdAt: "2026-07-01", progress: 100, amount: 220000, payee: "me", contract: base({ title: "소금빵집 3주년 기념 엽서", scope: "3주년 기념 엽서 2종 일러스트", deliverables: "인쇄용 PDF", startDate: "2026-07-03", endDate: "2026-07-18", payAmount: "220,000원", partnerName: "망원 소금빵집", proposerSign: "signed", partnerSign: "signed" }) },
+      { id: "pr1", partnerId: "p1", status: "ongoing", createdAt: "2026-10-28", progress: 60, contract: base({ category: "디자인", revenue: 1500000, title: "소금빵 포장 스티커 디자인", scope: "포장 스티커 3종 디자인", deliverables: "AI 원본 파일, 인쇄용 PDF", partnerName: "망원 소금빵집", proposerSign: "signed", partnerSign: "signed", proposerSignedAt: "2026-10-28", partnerSignedAt: "2026-10-29" }) },
+      { id: "pr2", partnerId: "p3", status: "ongoing", createdAt: "2026-11-02", progress: 25, contract: base({ title: "꽃 × 캘리 원데이 클래스", scope: "주말 원데이 클래스 2회 공동 운영", deliverables: "클래스 커리큘럼, 홍보 포스터", category: "클래스", revenue: 800000, partnerName: "연남 꽃집 들꽃", proposerSign: "signed", partnerSign: "signed", proposerSignedAt: "2026-11-02", partnerSignedAt: "2026-11-03" }) },
+      { id: "pr3", partnerId: "p5", status: "received", createdAt: "2026-11-08", progress: 0, contract: base({ category: "사진/영상", revenue: 1200000, title: "로스팅 과정 숏폼 3편", scope: "로스팅 과정을 담은 30초 숏폼 영상 3편 촬영·편집", deliverables: "세로형 MP4 3편", startDate: "2026-11-15", endDate: "2026-12-05", proposerName: "상수 로스터리 결", partnerName: "나", proposerSign: "signed", proposerSignedAt: "2026-11-08" }) },
+      { id: "pr4", partnerId: "p9", status: "received", createdAt: "2026-11-09", progress: 0, contract: base({ title: "독립출판 워크숍 공동 기획", scope: "4주 워크숍 커리큘럼 설계 및 진행", deliverables: "커리큘럼, 참가자 결과물 전시", startDate: "2026-12-01", endDate: "2026-12-28", category: "클래스", revenue: 1000000, proposerName: "당인리 책방 쉼", partnerName: "나", proposerSign: "signed", proposerSignedAt: "2026-11-09" }) },
+      { id: "pr5", partnerId: "p7", status: "done", createdAt: "2026-09-12", progress: 100, contract: base({ title: "주말 작가 팝업 마켓", scope: "매장 내 팝업 공간 운영", deliverables: "팝업 2회 진행", startDate: "2026-09-20", endDate: "2026-10-04", category: "공간/팝업", revenue: 900000, partnerName: "망리단 빈티지샵", proposerSign: "signed", partnerSign: "signed" }) },
+      { id: "pr6", partnerId: "p9", status: "done", createdAt: "2026-08-03", progress: 100, contract: base({ category: "디자인", revenue: 1000000, title: "책방 북토크 포스터 일러스트", scope: "북토크 홍보 포스터 1종, SNS용 카드 3장", deliverables: "인쇄용 PDF, SNS 이미지", startDate: "2026-08-05", endDate: "2026-08-20", partnerName: "당인리 책방 쉼", proposerSign: "signed", partnerSign: "signed" }) },
+      { id: "pr7", partnerId: "p1", status: "done", createdAt: "2026-07-01", progress: 100, contract: base({ category: "디자인", revenue: 1100000, title: "소금빵집 3주년 기념 엽서", scope: "3주년 기념 엽서 2종 일러스트", deliverables: "인쇄용 PDF", startDate: "2026-07-03", endDate: "2026-07-18", partnerName: "망원 소금빵집", proposerSign: "signed", partnerSign: "signed" }) },
     ],
     posts: [
-      { id: "po1", title: "가게 캐릭터 · 굿즈 일러스트 해드려요", category: "디자인", skills: ["캐릭터 일러스트", "스티커 굿즈"], description: "가게 분위기에 맞는 캐릭터를 만들어 스티커·엽서 굿즈까지 이어드려요. 시안 2종, 수정 2회 포함이에요.", amount: 350000, payee: "me", duration: "2주", lookingFor: "owner", createdAt: "2026-11-05", status: "open" },
+      { id: "po1", title: "가게 캐릭터 · 굿즈 일러스트 해드려요", category: "디자인", skills: ["캐릭터 일러스트", "스티커 굿즈"], description: "가게 분위기에 맞는 캐릭터를 만들어 스티커·엽서 굿즈까지 이어드려요. 시안 2종, 수정 2회 포함이에요.", amount: 1500000, duration: "2주", lookingFor: "owner", createdAt: "2026-11-05", status: "open" },
     ],
     settings: { notifyChat: true, notifyProposal: true, notifyMarketing: false, bank: "", account: "", area: "마포구 망원동" },
     threads: [

@@ -28,3 +28,6 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- Collab money is computed only in src/lib/money.ts (revenueSplit / earningsSummary by role); screens never hardcode rates, so the split table has one source.

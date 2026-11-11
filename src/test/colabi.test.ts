@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { colabiGrade, colabiScore, GRADES, nextGrade, recommendPartners, ME_LOCATION } from "@/lib/colabi";
-import { earningsSummary, feeSplit } from "@/lib/money";
+import { earningsSummary, REVENUE_SHARE, revenueSplit } from "@/lib/money";
 import type { Project } from "@/lib/store";
 
 describe("콜라비 지수", () => {
@@ -27,19 +27,41 @@ describe("콜라비 지수", () => {
   });
 });
 
-describe("플랫폼 수수료 8%", () => {
-  it("takes 8% from the amount the receiver gets", () => {
-    expect(feeSplit(300000)).toEqual({ gross: 300000, fee: 24000, net: 276000 });
-    expect(feeSplit(0)).toEqual({ gross: 0, fee: 0, net: 0 });
+describe("수익 배분 (플랫폼 8% 고정)", () => {
+  it("splits by category: owner / creator / platform 8%", () => {
+    const expected: Record<string, [number, number]> = {
+      디자인: [72, 20],
+      "사진/영상": [67, 25],
+      클래스: [62, 30],
+      메뉴개발: [77, 15],
+      "공간/팝업": [67, 25],
+      "음악/공연": [57, 35],
+    };
+    for (const [cat, [owner, creator]] of Object.entries(expected)) {
+      expect(revenueSplit(1000000, cat)).toEqual({ gross: 1000000, owner: owner * 10000, creator: creator * 10000, fee: 80000 });
+    }
+    expect(Object.keys(REVENUE_SHARE)).toHaveLength(6);
   });
 
-  it("sums received (완료) and upcoming (진행중) earnings only for money I receive", () => {
-    const mk = (status: Project["status"], amount: number, payee: "me" | "partner"): Project =>
-      ({ id: status + amount, partnerId: "p1", status, createdAt: "", progress: 0, amount, payee, contract: {} as Project["contract"] }) as Project;
-    const s = earningsSummary([mk("done", 100000, "me"), mk("done", 50000, "partner"), mk("ongoing", 200000, "me")]);
-    expect(s.received.net).toBe(92000);
-    expect(s.received.fee).toBe(8000);
-    expect(s.upcoming.net).toBe(184000);
+  it("platform fee is always 8% and the three shares add up to the revenue", () => {
+    for (const cat of Object.keys(REVENUE_SHARE)) {
+      const s = revenueSplit(123457, cat);
+      expect(s.fee).toBe(9877);
+      expect(s.owner + s.creator + s.fee).toBe(123457);
+    }
+  });
+
+  it("sums my share by role: received (완료) and upcoming (진행중)", () => {
+    const mk = (status: Project["status"], revenue: number, category: string): Project =>
+      ({ id: status + revenue, partnerId: "p1", status, createdAt: "", progress: 0, contract: { revenue, category } as Project["contract"] }) as Project;
+    const list = [mk("done", 1000000, "디자인"), mk("done", 1000000, "음악/공연"), mk("ongoing", 1000000, "클래스")];
+    const asCreator = earningsSummary(list, "creator");
+    expect(asCreator.received.net).toBe(550000);
+    expect(asCreator.received.fee).toBe(160000);
+    expect(asCreator.upcoming.net).toBe(300000);
+    const asOwner = earningsSummary(list, "owner");
+    expect(asOwner.received.net).toBe(1290000);
+    expect(asOwner.upcoming.net).toBe(620000);
   });
 });
 

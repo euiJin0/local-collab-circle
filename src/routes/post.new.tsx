@@ -3,7 +3,7 @@ import { ChevronLeft, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { PhoneFrame, SubHeader } from "@/components/AppShell";
-import { FeeBreakdown } from "@/components/FeeBreakdown";
+import { RevenueBreakdown } from "@/components/RevenueBreakdown";
 import { CATEGORIES, ROLE_LABEL } from "@/lib/colabi";
 import { formatWon, parseWon } from "@/lib/money";
 import { newId, todayISO, useStore } from "@/lib/store";
@@ -12,9 +12,9 @@ export const Route = createFileRoute("/post/new")({
   head: () => ({
     meta: [
       { title: "콜라보 올리기 — 콜라비" },
-      { name: "description", content: "쓸 재능과 제안 금액을 정해 동네 파트너에게 콜라보를 올려보세요. 수수료 8%를 뺀 받을 금액을 바로 확인할 수 있어요." },
+      { name: "description", content: "쓸 재능과 예상 매출을 정해 동네 파트너에게 콜라보를 올려보세요. 분야별 수익 배분과 받을 금액을 바로 확인할 수 있어요." },
       { property: "og:title", content: "콜라보 올리기 — 콜라비" },
-      { property: "og:description", content: "내 재능과 제안 금액을 올리고 받을 수익을 미리 확인하세요." },
+      { property: "og:description", content: "내 재능과 예상 매출을 올리고 받을 수익을 미리 확인하세요." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/post/new")({
 });
 
 const DURATIONS = ["1주 이내", "2주", "1달", "협의"];
-const QUICK = [50000, 100000, 300000];
+const QUICK = [100000, 500000, 1000000];
 
 function NewPost() {
   const { profile, addPost } = useStore();
@@ -36,7 +36,6 @@ function NewPost() {
   const [skillInput, setSkillInput] = useState("");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState(0);
-  const [payee, setPayee] = useState<"me" | "partner">(isOwner ? "partner" : "me");
   const [duration, setDuration] = useState(DURATIONS[1]!);
 
   const addSkill = () => {
@@ -55,7 +54,6 @@ function NewPost() {
       skills,
       description: description.trim(),
       amount,
-      payee,
       duration,
       lookingFor: isOwner ? "creator" : "owner",
       createdAt: todayISO(),
@@ -152,17 +150,11 @@ function NewPost() {
         </div>
 
         <div>
-          <p className={label}>제안 금액</p>
-          <div className="grid grid-cols-2 gap-2">
-            {(["me", "partner"] as const).map((k) => (
-              <button key={k} type="button" onClick={() => setPayee(k)} className={`rounded-xl py-2.5 text-sm font-bold ${payee === k ? "bg-foreground text-background" : "bg-muted text-muted-foreground"}`}>
-                {k === "me" ? "내가 받아요" : "내가 지급해요"}
-              </button>
-            ))}
-          </div>
+          <p className={label}>예상 콜라보 매출</p>
+          <p className="mb-2 text-[11px] text-muted-foreground">콜라보로 가게에서 생길 것으로 예상되는 매출이에요. 위에서 고른 분야에 따라 나눠요.</p>
           <div className="relative mt-2">
             <input
-              aria-label="제안 금액(원)"
+              aria-label="예상 콜라보 매출(원)"
               inputMode="numeric"
               className={`${field} pr-10 text-right text-lg font-bold`}
               placeholder="0"
@@ -185,7 +177,7 @@ function NewPost() {
           </div>
         </div>
 
-        <FeeBreakdown amount={amount} payee={payee} />
+        <RevenueBreakdown amount={amount} category={category} role={profile.role} />
       </div>
 
       <div className="fixed bottom-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 border-t bg-card p-4">
