@@ -83,7 +83,7 @@ function RolePage() {
           maxLength={20}
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
-          placeholder={role === "owner" ? "예: 망원 소금빵집" : "예: 일러스트 은채"}
+          placeholder={role === "owner" ? "예: 망원 소금빵집" : "예: 동네 일러스트 작가"}
           className="mt-2 w-full rounded-xl border bg-card px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring"
         />
 
