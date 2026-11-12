@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { COLLAB_TYPES, collabTypeTitle, colabiGrade, colabiScore, GRADES, nextGrade, recommendPartners, ME_LOCATION } from "@/lib/colabi";
+import { BREACH_CLAUSE, LEGAL_BASIS, MANUAL_CASES, MANUAL_STEPS } from "@/lib/contractManual";
 import { earningsSummary, REVENUE_SHARE, revenueSplit } from "@/lib/money";
 import type { Project } from "@/lib/store";
 
@@ -97,5 +98,21 @@ describe("협업유형", () => {
     const firstMiss = recs.findIndex((r) => r.shared.length === 0);
     expect(recs[0]!.partner.collabTypes).toContain("space");
     expect(recs.slice(firstMiss).every((r) => r.shared.length === 0)).toBe(true);
+  });
+});
+
+describe("계약 파기 방지 매뉴얼", () => {
+  it("bases damages claims on 민법 제390조", () => {
+    expect(LEGAL_BASIS).toBe("민법 제390조");
+    expect(BREACH_CLAUSE).toContain(LEGAL_BASIS);
+  });
+
+  it("treats same-day silence as claimable but a bare no-show as hard to sue", () => {
+    const lost = MANUAL_CASES.find((m) => m.id === "lost-contact")!;
+    const noShow = MANUAL_CASES.find((m) => m.id === "no-show")!;
+    expect(lost.canClaim).toBe(true);
+    expect(lost.note).toContain("문자");
+    expect(noShow.canClaim).toBe(false);
+    expect(noShow.note).toContain("소송");
   });
 });

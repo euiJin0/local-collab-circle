@@ -1,4 +1,5 @@
 import { getCollabType } from "@/lib/colabi";
+import { BREACH_CLAUSE, LEGAL_BASIS, LEGAL_DISCLAIMER, MANUAL_CASES, MANUAL_STEPS } from "@/lib/contractManual";
 import { formatWon, pct, PLATFORM_FEE_LABEL, shareOf } from "@/lib/money";
 import type { Contract } from "@/lib/store";
 
@@ -27,6 +28,43 @@ function Sign({ name, sign, at }: { name: string; sign: string | undefined; at: 
   );
 }
 
+function BreachManual() {
+  return (
+    <section className="mt-4 rounded-xl border border-dashed p-3">
+      <p className="text-[11px] font-bold tracking-widest text-secondary-strong">계약 파기 방지 매뉴얼 · 주의 사항</p>
+      <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+        중간에 계약을 파기하는 것을 막기 위한 대응 기준이에요. {LEGAL_BASIS}(채무불이행에 따른 손해배상)를 기준으로 아래 두 경우를
+        구분합니다.
+      </p>
+      <ul className="mt-2 space-y-2">
+        {MANUAL_CASES.map((m) => (
+          <li key={m.id} className="rounded-lg bg-muted p-2.5">
+            <p className="text-xs font-bold">
+              {m.situation}
+              <span className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${m.canClaim ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
+                {m.canClaim ? "손해배상 청구 가능" : "소송이 어려울 수 있음"}
+              </span>
+            </p>
+            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">{m.note}</p>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 text-[11px] font-bold">대응 순서</p>
+      <ol className="mt-1 space-y-1.5">
+        {MANUAL_STEPS.map((s, i) => (
+          <li key={s.title} className="flex gap-2 text-[11px] leading-relaxed">
+            <span className="font-display text-primary-strong">{i + 1}</span>
+            <span>
+              <b>{s.title}</b> — {s.detail}
+            </span>
+          </li>
+        ))}
+      </ol>
+      <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">{LEGAL_DISCLAIMER}</p>
+    </section>
+  );
+}
+
 export function ContractDocument({ c }: { c: Contract }) {
   const sh = shareOf(c.category, c.creatorPct);
   const ct = getCollabType(c.collabType);
@@ -41,6 +79,7 @@ export function ContractDocument({ c }: { c: Contract }) {
     ["수익 배분", `콜라보 매출을 소상공인 ${pct(sh.owner)} · 창작자 ${pct(sh.creator)} · 콜라비 수수료 ${PLATFORM_FEE_LABEL}(고정)로 배분${c.creatorPct != null ? "(직접 제안한 비율)" : "(분야 권장 비율·기본값)"}하며, 실제 매출 기준으로 프로젝트 완료 후 정산`],
     ["저작권", COPYRIGHT_LABEL[c.copyright]],
     ["취소·위약", c.cancelTerms || "—"],
+    ["불이행 대응", BREACH_CLAUSE],
   ];
   return (
     <article className="rounded-2xl border bg-card p-5 shadow-card">
@@ -64,6 +103,7 @@ export function ContractDocument({ c }: { c: Contract }) {
       <p className="mt-4 rounded-lg bg-muted p-3 text-[11px] leading-relaxed text-muted-foreground">
         양 당사자는 본 계약의 내용을 성실히 이행하며, 분쟁 발생 시 콜라비 중재 가이드에 따라 우선 협의합니다. 본 계약서는 전자서명으로 체결되며 서면 계약과 동일한 효력을 갖는 것을 목표로 합니다.
       </p>
+      <BreachManual />
       <div className="mt-4 flex gap-3">
         <Sign name={c.proposerName} sign={c.proposerSign} at={c.proposerSignedAt} />
         <Sign name={c.partnerName} sign={c.partnerSign} at={c.partnerSignedAt} />
