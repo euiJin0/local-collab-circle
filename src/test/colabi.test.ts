@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { colabiGrade, colabiScore, GRADES, nextGrade, recommendPartners, ME_LOCATION } from "@/lib/colabi";
+import { COLLAB_TYPES, collabTypeTitle, colabiGrade, colabiScore, GRADES, nextGrade, recommendPartners, ME_LOCATION } from "@/lib/colabi";
 import { earningsSummary, REVENUE_SHARE, revenueSplit } from "@/lib/money";
 import type { Project } from "@/lib/store";
 
@@ -79,5 +79,23 @@ describe("근처 추천", () => {
     const recs = recommendPartners("creator", ME_LOCATION, 10);
     expect(recs.length).toBeGreaterThan(0);
     expect(recs.every((r) => r.partner.role === "owner")).toBe(true);
+  });
+});
+
+describe("협업유형", () => {
+  it("has the four types the platform uses", () => {
+    expect(COLLAB_TYPES.map((t) => t.name)).toEqual(["홍보 콘텐츠", "상품·서비스 개발", "공간·매장 개선", "이벤트·경험 기획"]);
+  });
+
+  it("owners pick 필요한 협업유형, creators pick 도울 수 있는 협업유형", () => {
+    expect(collabTypeTitle("owner")).toBe("필요한 협업유형");
+    expect(collabTypeTitle("creator")).toBe("도울 수 있는 협업유형");
+  });
+
+  it("recommends partners whose 협업유형 matches mine first", () => {
+    const recs = recommendPartners("creator", ME_LOCATION, 10, ["space"]);
+    const firstMiss = recs.findIndex((r) => r.shared.length === 0);
+    expect(recs[0]!.partner.collabTypes).toContain("space");
+    expect(recs.slice(firstMiss).every((r) => r.shared.length === 0)).toBe(true);
   });
 });

@@ -1,3 +1,4 @@
+import { getCollabType } from "@/lib/colabi";
 import { formatWon, pct, PLATFORM_FEE_LABEL, shareOf } from "@/lib/money";
 import type { Contract } from "@/lib/store";
 
@@ -28,8 +29,10 @@ function Sign({ name, sign, at }: { name: string; sign: string | undefined; at: 
 
 export function ContractDocument({ c }: { c: Contract }) {
   const sh = shareOf(c.category, c.creatorPct);
+  const ct = getCollabType(c.collabType);
   const rows: [string, string][] = [
     ["프로젝트명", c.title || "—"],
+    ["협업유형", ct ? `${ct.name} (${ct.items.join(", ")})` : "—"],
     ["작업 범위", c.scope || "—"],
     ["결과물", c.deliverables || "—"],
     ["기간", `${c.startDate} ~ ${c.endDate}`],

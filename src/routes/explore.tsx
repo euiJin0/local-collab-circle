@@ -5,7 +5,7 @@ import { AppScreen } from "@/components/AppShell";
 import { LeafMark } from "@/components/Logo";
 import { NearbyMap } from "@/components/NearbyMap";
 import { GradeChip, PartnerAvatar, RoleBadge } from "@/components/PartnerBits";
-import { CATEGORIES, distanceKm, formatDistance, ME_LOCATION, PARTNERS, recommendPartners, ROLE_LABEL, type Role } from "@/lib/colabi";
+import { COLLAB_TYPES, collabTypeTitle, distanceKm, formatDistance, getCollabType, ME_LOCATION, PARTNERS, recommendPartners, ROLE_LABEL, type CollabTypeId, type Role } from "@/lib/colabi";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/explore")({
@@ -25,9 +25,9 @@ export const Route = createFileRoute("/explore")({
 type RoleFilter = "all" | Role;
 
 function Explore() {
-  const { profile } = useStore();
+  const { profile, posts } = useStore();
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
-  const [cat, setCat] = useState<string>("전체");
+  const [ctype, setCtype] = useState<CollabTypeId | "all">("all");
   const [q, setQ] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
 
@@ -36,15 +36,20 @@ function Explore() {
     return PARTNERS.filter(
       (p) =>
         (roleFilter === "all" || p.role === roleFilter) &&
-        (cat === "전체" || p.category === cat) &&
-        (!query || p.name.includes(query) || p.category.includes(query) || p.tags.some((t) => t.includes(query)) || p.area.includes(query)),
+        (ctype === "all" || p.collabTypes.includes(ctype)) &&
+        (!query || p.name.includes(query) || p.category.includes(query) || p.collabTypes.some((id) => getCollabType(id)?.name.includes(query)) || p.tags.some((t) => t.includes(query)) || p.area.includes(query)),
     )
       .map((p) => ({ p, km: distanceKm(ME_LOCATION, p) }))
       .sort((a, b) => a.km - b.km);
-  }, [roleFilter, cat, q]);
+  }, [roleFilter, ctype, q]);
 
   const partners = useMemo(() => filtered.map((f) => f.p), [filtered]);
-  const recs = useMemo(() => recommendPartners(profile.role, ME_LOCATION, 5), [profile.role]);
+  // 내가 올린(모집중) 콜라보 글의 협업유형과 맞는 파트너를 먼저 추천
+  const myTypes = useMemo(
+    () => [...new Set(posts.filter((po) => po.status === "open").flatMap((po) => po.collabTypes ?? []))],
+    [posts],
+  );
+  const recs = useMemo(() => recommendPartners(profile.role, ME_LOCATION, 5, myTypes), [profile.role, myTypes]);
   const sel = filtered.find((f) => f.p.id === selected);
   const lookingFor = profile.role ? ROLE_LABEL[profile.role === "creator" ? "owner" : "creator"] : "파트너";
 
@@ -73,7 +78,7 @@ function Explore() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="가게, 창작자, 분야 검색"
+            placeholder="가게, 창작자, 협업유형 검색"
             className="flex-1 bg-transparent text-sm outline-none"
             aria-label="파트너 검색"
           />
@@ -94,14 +99,17 @@ function Explore() {
               {r === "all" ? "전체" : r === "creator" ? "🎨 창작자" : "🏪 소상공인"}
             </button>
           ))}
-          <span className="mx-1 w-px shrink-0 bg-border" />
-          {["전체", ...CATEGORIES].map((c) => (
+        </div>
+        <div className="scrollbar-none -mx-5 mt-2 flex gap-2 overflow-x-auto px-5">
+          <span className="shrink-0 self-center text-[11px] font-bold text-muted-foreground">협업유형</span>
+          {[{ id: "all" as const, name: "전체", emoji: "" }, ...COLLAB_TYPES].map((t) => (
             <button
-              key={c}
-              onClick={() => setCat(c)}
-              className={`shrink-0 rounded-full border px-3 py-1.5 text-xs ${cat === c ? "border-foreground bg-accent font-bold" : "bg-card text-muted-foreground"}`}
+              key={t.id}
+              onClick={() => setCtype(t.id)}
+              className={`shrink-0 rounded-full border px-3 py-1.5 text-xs ${ctype === t.id ? "border-foreground bg-accent font-bold" : "bg-card text-muted-foreground"}`}
             >
-              {c}
+              {t.emoji ? `${t.emoji} ` : ""}
+              {t.name}
             </button>
           ))}
         </div>
@@ -122,7 +130,7 @@ function Explore() {
                 <RoleBadge role={sel.p.role} />
               </div>
               <p className="text-xs text-muted-foreground">
-                {sel.p.category} · {sel.p.area} · {formatDistance(sel.km)}
+                {sel.p.collabTypes.map((id) => getCollabType(id)?.emoji).join("")} {sel.p.category} · {sel.p.area} · {formatDistance(sel.km)}
               </p>
             </div>
             <Link to="/partner/$id" params={{ id: sel.p.id }} className="rounded-xl bg-foreground px-3 py-2 text-xs font-bold text-background">
@@ -140,10 +148,13 @@ function Explore() {
               <Sparkle className="h-3.5 w-3.5" /> 콜라비 추천
             </p>
             <h2 className="text-lg font-bold">근처에 이런 {lookingFor}가 있어요</h2>
+            {myTypes.length > 0 && (
+              <p className="text-[11px] text-muted-foreground">내 콜라보 글의 협업유형과 맞는 곳을 먼저 보여드려요</p>
+            )}
           </div>
         </div>
         <div className="scrollbar-none mt-3 flex gap-3 overflow-x-auto px-5 pb-2">
-          {recs.map(({ partner: p, km, match }) => (
+          {recs.map(({ partner: p, km, match, shared }) => (
             <Link
               key={p.id}
               to="/partner/$id"
@@ -159,6 +170,11 @@ function Explore() {
                 {p.category} · {formatDistance(km)}
               </p>
               <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">{p.intro}</p>
+              <p className="mt-2 truncate text-[11px] font-bold text-secondary-strong">
+                {shared.length > 0
+                  ? `✓ ${shared.map((id) => getCollabType(id)?.name).join(", ")} 맞음`
+                  : p.collabTypes.map((id) => getCollabType(id)?.emoji).join(" ")}
+              </p>
             </Link>
           ))}
         </div>
@@ -177,7 +193,8 @@ function Explore() {
                     <RoleBadge role={p.role} />
                   </div>
                   <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <span>{formatDistance(km)}</span>·<span>{p.category}</span>
+                    <span>{formatDistance(km)}</span>·
+                    <span title={collabTypeTitle(p.role)}>{p.collabTypes.map((id) => getCollabType(id)?.emoji).join("")}</span>
                     <GradeChip p={p} />
                   </div>
                 </div>

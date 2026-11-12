@@ -3,8 +3,9 @@ import { ChevronLeft, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { PhoneFrame, SubHeader } from "@/components/AppShell";
+import { CollabTypePicker } from "@/components/CollabTypes";
 import { RevenueBreakdown, ShareProposer } from "@/components/RevenueBreakdown";
-import { CATEGORIES, ROLE_LABEL } from "@/lib/colabi";
+import { CATEGORIES, collabTypeTitle, ROLE_LABEL, type CollabTypeId } from "@/lib/colabi";
 import { formatWon, parseWon } from "@/lib/money";
 import { newId, todayISO, useStore } from "@/lib/store";
 
@@ -31,6 +32,7 @@ function NewPost() {
   const navigate = useNavigate();
   const isOwner = profile.role === "owner";
   const [title, setTitle] = useState("");
+  const [collabTypes, setCollabTypes] = useState<CollabTypeId[]>([]);
   const [category, setCategory] = useState<string>(CATEGORIES[0]);
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");
@@ -45,12 +47,13 @@ function NewPost() {
     setSkillInput("");
   };
 
-  const ok = title.trim().length > 0 && skills.length > 0 && description.trim().length > 0 && amount > 0;
+  const ok = title.trim().length > 0 && collabTypes.length > 0 && skills.length > 0 && description.trim().length > 0 && amount > 0;
 
   const submit = () => {
     addPost({
       id: newId("po"),
       title: title.trim(),
+      collabTypes,
       category,
       skills,
       description: description.trim(),
@@ -86,6 +89,16 @@ function NewPost() {
         <div>
           <label className={label} htmlFor="ptitle">제목</label>
           <input id="ptitle" maxLength={50} className={field} placeholder={isOwner ? "예: 빵집 포장 스티커 디자인해 주실 분" : "예: 가게 메뉴 사진 촬영해 드려요"} value={title} onChange={(e) => setTitle(e.target.value)} />
+        </div>
+
+        <div>
+          <p className={label}>{collabTypeTitle(profile.role)}</p>
+          <p className="mb-2 text-[11px] text-muted-foreground">
+            {isOwner
+              ? "가게에서 함께 풀고 싶은 협업유형을 골라주세요. 여러 개 고를 수 있어요."
+              : "내 재능으로 가게를 도울 수 있는 협업유형을 골라주세요. 여러 개 고를 수 있어요."}
+          </p>
+          <CollabTypePicker multiple value={collabTypes} onChange={setCollabTypes} />
         </div>
 
         <div>

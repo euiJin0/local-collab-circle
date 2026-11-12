@@ -3,6 +3,7 @@ import { Bell, ChevronRight, CreditCard, Info, Plus, Settings as SettingsIcon, T
 import { useState } from "react";
 import { toast } from "sonner";
 import { AppScreen } from "@/components/AppShell";
+import { CollabTypeChips } from "@/components/CollabTypes";
 import {
   COLABI_WEIGHTS,
   COMPLETED_FOR_MAX,
@@ -169,6 +170,9 @@ function MyPage() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
+                  </div>
+                  <div className="mt-2">
+                    <CollabTypeChips ids={po.collabTypes ?? []} size="xs" />
                   </div>
                   <div className="mt-2 flex flex-wrap gap-1">
                     {po.skills.map((sk) => (

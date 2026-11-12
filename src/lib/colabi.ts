@@ -7,6 +7,32 @@ export const ROLE_LABEL: Record<Role, string> = {
 
 export const CATEGORIES = ["디자인", "사진/영상", "클래스", "메뉴개발", "공간/팝업", "음악/공연"] as const;
 
+/* ---------- 협업유형 ---------- */
+
+export type CollabTypeId = "promo" | "product" | "space" | "event";
+
+export type CollabType = { id: CollabTypeId; name: string; emoji: string; items: string[] };
+
+export const COLLAB_TYPES: CollabType[] = [
+  { id: "promo", name: "홍보 콘텐츠", emoji: "📣", items: ["사진·영상 촬영", "SNS 콘텐츠", "디자인", "홍보물 제작"] },
+  { id: "product", name: "상품·서비스 개발", emoji: "🧁", items: ["신메뉴", "상품 구성", "패키지", "고객 서비스 아이디어 기획"] },
+  { id: "space", name: "공간·매장 개선", emoji: "🪴", items: ["상품 진열", "매장 분위기", "포토존", "공간 활용 기획"] },
+  { id: "event", name: "이벤트·경험 기획", emoji: "🎪", items: ["팝업", "체험 행사", "시즌 이벤트", "지역 연계 행사 기획"] },
+];
+
+export function getCollabType(id: string | undefined): CollabType | undefined {
+  return COLLAB_TYPES.find((t) => t.id === id);
+}
+
+/** 소상공인은 '필요한' 협업유형을, 창작자는 '도울 수 있는' 협업유형을 고른다 */
+export function collabTypeTitle(role: Role | null): string {
+  return role === "creator" ? "도울 수 있는 협업유형" : "필요한 협업유형";
+}
+
+export function sharedCollabTypes(a: readonly CollabTypeId[], b: readonly CollabTypeId[]): CollabTypeId[] {
+  return a.filter((t) => b.includes(t));
+}
+
 export type Partner = {
   id: string;
   role: Role;
@@ -18,6 +44,8 @@ export type Partner = {
   intro: string;
   tags: string[];
   emoji: string;
+  /** 소상공인: 필요한 협업유형 / 창작자: 도울 수 있는 협업유형 */
+  collabTypes: CollabTypeId[];
   colabiScore: number;
   completed: number;
 };
@@ -26,16 +54,16 @@ export type Partner = {
 export const ME_LOCATION = { lat: 37.5559, lng: 126.9105, label: "마포구 망원동" };
 
 export const PARTNERS: Partner[] = [
-  { id: "p1", role: "owner", name: "망원 소금빵집", category: "디자인", area: "망원동", lat: 37.5563, lng: 126.906, intro: "오픈 3년차 빵집이에요. 새 포장 스티커와 로고를 함께 만들 분을 찾아요.", tags: ["패키지", "로고"], emoji: "🥐", colabiScore: 82, completed: 6 },
-  { id: "p2", role: "creator", name: "사진 찍는 지은", category: "사진/영상", area: "합정동", lat: 37.5495, lng: 126.9139, intro: "동네 가게의 메뉴·공간 사진을 따뜻하게 담아요. 인스타 피드 정리도 가능해요.", tags: ["메뉴촬영", "인스타"], emoji: "📷", colabiScore: 76, completed: 9 },
-  { id: "p3", role: "owner", name: "연남 꽃집 들꽃", category: "클래스", area: "연남동", lat: 37.5662, lng: 126.925, intro: "꽃 + 캘리그라피 원데이 클래스를 함께 열 분 구해요. 공간 제공합니다.", tags: ["원데이클래스", "공간제공"], emoji: "💐", colabiScore: 88, completed: 11 },
-  { id: "p4", role: "creator", name: "일러스트 민호", category: "디자인", area: "서교동", lat: 37.5537, lng: 126.9198, intro: "귀여운 캐릭터 작업이 특기예요. 가게 캐릭터와 굿즈 콜라보 환영!", tags: ["캐릭터", "굿즈"], emoji: "🎨", colabiScore: 91, completed: 17 },
-  { id: "p5", role: "owner", name: "상수 로스터리 결", category: "사진/영상", area: "상수동", lat: 37.5477, lng: 126.9229, intro: "로스팅 과정을 담은 숏폼 영상을 찍어줄 분을 찾고 있어요.", tags: ["숏폼", "브랜딩"], emoji: "☕", colabiScore: 70, completed: 4 },
-  { id: "p6", role: "creator", name: "베이킹 덕후 수아", category: "메뉴개발", area: "성산동", lat: 37.5665, lng: 126.9089, intro: "홈베이킹 5년차. 카페와 시즌 디저트를 함께 개발하고 싶어요.", tags: ["디저트", "시즌메뉴"], emoji: "🍰", colabiScore: 64, completed: 3 },
-  { id: "p7", role: "owner", name: "망리단 빈티지샵", category: "공간/팝업", area: "망원동", lat: 37.558, lng: 126.903, intro: "주말에 매장 한쪽을 작가 팝업 공간으로 내드려요.", tags: ["팝업", "플리마켓"], emoji: "🧥", colabiScore: 79, completed: 8 },
-  { id: "p8", role: "creator", name: "어쿠스틱 듀오 온", category: "음악/공연", area: "연희동", lat: 37.568, lng: 126.931, intro: "작은 공간에서 하는 어쿠스틱 공연을 좋아해요. 가게 음악회 함께해요.", tags: ["라이브", "버스킹"], emoji: "🎸", colabiScore: 73, completed: 5 },
-  { id: "p9", role: "owner", name: "당인리 책방 쉼", category: "클래스", area: "당인동", lat: 37.545, lng: 126.918, intro: "독립출판 워크숍을 같이 기획할 작가님을 찾아요.", tags: ["워크숍", "독립출판"], emoji: "📚", colabiScore: 85, completed: 10 },
-  { id: "p10", role: "creator", name: "캘리그라퍼 하린", category: "클래스", area: "망원동", lat: 37.5548, lng: 126.9078, intro: "손글씨 간판·메뉴판 작업과 캘리 클래스를 진행해요.", tags: ["메뉴판", "캘리"], emoji: "✒️", colabiScore: 94, completed: 22 },
+  { id: "p1", role: "owner", name: "망원 소금빵집", category: "디자인", area: "망원동", lat: 37.5563, lng: 126.906, intro: "오픈 3년차 빵집이에요. 새 포장 스티커와 로고를 함께 만들 분을 찾아요.", tags: ["패키지", "로고"], emoji: "🥐", collabTypes: ["promo", "product"], colabiScore: 82, completed: 6 },
+  { id: "p2", role: "creator", name: "사진 찍는 지은", category: "사진/영상", area: "합정동", lat: 37.5495, lng: 126.9139, intro: "동네 가게의 메뉴·공간 사진을 따뜻하게 담아요. 인스타 피드 정리도 가능해요.", tags: ["메뉴촬영", "인스타"], emoji: "📷", collabTypes: ["promo"], colabiScore: 76, completed: 9 },
+  { id: "p3", role: "owner", name: "연남 꽃집 들꽃", category: "클래스", area: "연남동", lat: 37.5662, lng: 126.925, intro: "꽃 + 캘리그라피 원데이 클래스를 함께 열 분 구해요. 공간 제공합니다.", tags: ["원데이클래스", "공간제공"], emoji: "💐", collabTypes: ["event", "space"], colabiScore: 88, completed: 11 },
+  { id: "p4", role: "creator", name: "일러스트 민호", category: "디자인", area: "서교동", lat: 37.5537, lng: 126.9198, intro: "귀여운 캐릭터 작업이 특기예요. 가게 캐릭터와 굿즈 콜라보 환영!", tags: ["캐릭터", "굿즈"], emoji: "🎨", collabTypes: ["promo", "product"], colabiScore: 91, completed: 17 },
+  { id: "p5", role: "owner", name: "상수 로스터리 결", category: "사진/영상", area: "상수동", lat: 37.5477, lng: 126.9229, intro: "로스팅 과정을 담은 숏폼 영상을 찍어줄 분을 찾고 있어요.", tags: ["숏폼", "브랜딩"], emoji: "☕", collabTypes: ["promo"], colabiScore: 70, completed: 4 },
+  { id: "p6", role: "creator", name: "베이킹 덕후 수아", category: "메뉴개발", area: "성산동", lat: 37.5665, lng: 126.9089, intro: "홈베이킹 5년차. 카페와 시즌 디저트를 함께 개발하고 싶어요.", tags: ["디저트", "시즌메뉴"], emoji: "🍰", collabTypes: ["product", "event"], colabiScore: 64, completed: 3 },
+  { id: "p7", role: "owner", name: "망리단 빈티지샵", category: "공간/팝업", area: "망원동", lat: 37.558, lng: 126.903, intro: "주말에 매장 한쪽을 작가 팝업 공간으로 내드려요.", tags: ["팝업", "플리마켓"], emoji: "🧥", collabTypes: ["event", "space"], colabiScore: 79, completed: 8 },
+  { id: "p8", role: "creator", name: "어쿠스틱 듀오 온", category: "음악/공연", area: "연희동", lat: 37.568, lng: 126.931, intro: "작은 공간에서 하는 어쿠스틱 공연을 좋아해요. 가게 음악회 함께해요.", tags: ["라이브", "버스킹"], emoji: "🎸", collabTypes: ["event"], colabiScore: 73, completed: 5 },
+  { id: "p9", role: "owner", name: "당인리 책방 쉼", category: "클래스", area: "당인동", lat: 37.545, lng: 126.918, intro: "독립출판 워크숍을 같이 기획할 작가님을 찾아요.", tags: ["워크숍", "독립출판"], emoji: "📚", collabTypes: ["event", "promo"], colabiScore: 85, completed: 10 },
+  { id: "p10", role: "creator", name: "캘리그라퍼 하린", category: "클래스", area: "망원동", lat: 37.5548, lng: 126.9078, intro: "손글씨 간판·메뉴판 작업과 캘리 클래스를 진행해요.", tags: ["메뉴판", "캘리"], emoji: "✒️", collabTypes: ["space", "promo", "event"], colabiScore: 94, completed: 22 },
 ];
 
 export function getPartner(id: string): Partner | undefined {
@@ -57,15 +85,19 @@ export function formatDistance(km: number): string {
   return km < 1 ? `${Math.round(km * 1000)}m` : `${km.toFixed(1)}km`;
 }
 
-/** 내 역할과 반대 역할의 파트너를 거리와 콜라비 지수로 추천 */
-export function recommendPartners(myRole: Role | null, from: LatLng, limit = 5) {
+/**
+ * 내 역할과 반대 역할의 파트너를 거리와 콜라비 지수로 추천.
+ * 내가 고른 협업유형(wanted)이 있으면 그 유형이 겹치는 파트너를 먼저 보여준다.
+ */
+export function recommendPartners(myRole: Role | null, from: LatLng, limit = 5, wanted: readonly CollabTypeId[] = []) {
   return PARTNERS.filter((p) => !myRole || p.role !== myRole)
     .map((p) => {
       const km = distanceKm(from, p);
       const match = Math.round((p.colabiScore / 100) * 50 + (1 - Math.min(km, 3) / 3) * 50);
-      return { partner: p, km, match };
+      const shared = sharedCollabTypes(p.collabTypes, wanted);
+      return { partner: p, km, match, shared };
     })
-    .sort((a, b) => b.match - a.match)
+    .sort((a, b) => Number(b.shared.length > 0) - Number(a.shared.length > 0) || b.match - a.match)
     .slice(0, limit);
 }
 

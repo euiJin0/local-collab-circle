@@ -3,11 +3,12 @@ import { ChevronLeft } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { PhoneFrame, SubHeader } from "@/components/AppShell";
+import { CollabTypePicker } from "@/components/CollabTypes";
 import { ContractDocument, COPYRIGHT_LABEL } from "@/components/ContractDocument";
 import { PartnerAvatar } from "@/components/PartnerBits";
 import { RevenueBreakdown, ShareProposer } from "@/components/RevenueBreakdown";
 import { SignaturePad } from "@/components/SignaturePad";
-import { CATEGORIES, getPartner } from "@/lib/colabi";
+import { CATEGORIES, collabTypeTitle, getPartner, sharedCollabTypes } from "@/lib/colabi";
 import { parseWon } from "@/lib/money";
 import { newId, todayISO, useStore, type Contract, type Copyright } from "@/lib/store";
 
@@ -43,8 +44,10 @@ function ProposePage() {
   const [step, setStep] = useState(0);
   const [agree, setAgree] = useState(false);
   const [sign, setSign] = useState<string | null>(null);
+  const myRole = profile.role ?? (partner.role === "owner" ? "creator" : "owner");
   const [c, setC] = useState<Contract>(() => ({
     title: "",
+    collabType: partner.collabTypes[0],
     scope: "",
     deliverables: "",
     startDate: todayISO(),
@@ -59,7 +62,7 @@ function ProposePage() {
   }));
   const set = <K extends keyof Contract>(k: K, v: Contract[K]) => setC((s) => ({ ...s, [k]: v }));
 
-  const step0ok = c.title.trim().length > 0 && c.scope.trim().length > 0;
+  const step0ok = !!c.collabType && c.title.trim().length > 0 && c.scope.trim().length > 0;
   const step1ok = c.endDate >= c.startDate && c.revenue > 0;
   const canNext = step === 0 ? step0ok : step === 1 ? step1ok : agree && !!sign;
 
@@ -117,6 +120,24 @@ function ProposePage() {
       <div className="flex-1 space-y-4 px-5 pb-32 pt-5">
         {step === 0 && (
           <>
+            <div>
+              <p className={label}>{myRole === "owner" ? "이번 콜라보로 풀고 싶은 협업유형" : "내가 도울 협업유형"}</p>
+              <p className="mb-2 text-[11px] text-muted-foreground">
+                {partner.role === "owner"
+                  ? `${partner.name}에 필요한 협업유형에 표시가 있어요. 내가 도울 수 있는 유형을 하나 골라주세요.`
+                  : `${partner.name}님이 도울 수 있는 협업유형에 표시가 있어요. 가게에 필요한 유형을 하나 골라주세요.`}
+              </p>
+              <CollabTypePicker
+                value={c.collabType ? [c.collabType] : []}
+                onChange={(v) => set("collabType", v[0])}
+                highlight={{ ids: partner.collabTypes, label: partner.role === "owner" ? "가게가 필요해요" : "도울 수 있어요" }}
+              />
+              {c.collabType && sharedCollabTypes([c.collabType], partner.collabTypes).length === 0 && (
+                <p className="mt-2 text-[11px] text-secondary-strong">
+                  {partner.name}의 {collabTypeTitle(partner.role)}이 아니에요. 그래도 제안은 보낼 수 있어요.
+                </p>
+              )}
+            </div>
             <div>
               <label className={label} htmlFor="title">프로젝트명</label>
               <input id="title" maxLength={50} className={field} placeholder="예: 가게 포장 스티커 디자인" value={c.title} onChange={(e) => set("title", e.target.value)} />

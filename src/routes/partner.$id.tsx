@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-rout
 import { ChevronLeft, FileSignature, MapPin, MessageCircle } from "lucide-react";
 import { PhoneFrame, SubHeader } from "@/components/AppShell";
 import { PartnerAvatar, RoleBadge } from "@/components/PartnerBits";
-import { distanceKm, formatDistance, getPartner, gradeForPartner, ME_LOCATION } from "@/lib/colabi";
+import { collabTypeTitle, distanceKm, getCollabType, formatDistance, getPartner, gradeForPartner, ME_LOCATION } from "@/lib/colabi";
 
 export const Route = createFileRoute("/partner/$id")({
   loader: ({ params }) => {
@@ -71,6 +71,23 @@ function PartnerPage() {
 
         <h3 className="mt-6 text-sm font-bold">소개</h3>
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{p.intro}</p>
+
+        <h3 className="mt-5 text-sm font-bold">{collabTypeTitle(p.role)}</h3>
+        <ul className="mt-2 space-y-2">
+          {p.collabTypes.map((id) => {
+            const t = getCollabType(id);
+            if (!t) return null;
+            return (
+              <li key={id} className="flex items-start gap-3 rounded-2xl bg-card p-3 shadow-card">
+                <span className="text-xl">{t.emoji}</span>
+                <div>
+                  <p className="text-sm font-bold">{t.name}</p>
+                  <p className="text-[11px] text-muted-foreground">{t.items.join(" · ")}</p>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
 
         <h3 className="mt-5 text-sm font-bold">분야 · 키워드</h3>
         <div className="mt-2 flex flex-wrap gap-2">
