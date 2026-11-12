@@ -54,7 +54,6 @@ function ProposePage() {
     endDate: todayISO(),
     category: (CATEGORIES as readonly string[]).includes(partner.category) ? partner.category : CATEGORIES[0],
     revenue: 0,
-    revisions: 2,
     copyright: "shared",
     cancelTerms: "착수 전 취소 시 위약금 없음, 착수 후 취소 시 진행분 정산",
     proposerName: profile.nickname || "나",
@@ -194,10 +193,6 @@ function ProposePage() {
             </div>
             <ShareProposer category={c.category} value={c.creatorPct} onChange={(v) => set("creatorPct", v)} />
             <RevenueBreakdown amount={c.revenue} category={c.category} creatorPct={c.creatorPct} role={profile.role} />
-            <div>
-              <label className={label} htmlFor="rev">수정 횟수: {c.revisions}회</label>
-              <input id="rev" type="range" min={0} max={5} value={c.revisions} onChange={(e) => set("revisions", Number(e.target.value))} className="w-full accent-[var(--primary-strong)]" />
-            </div>
             <div>
               <p className={label}>저작권</p>
               <div className="space-y-2">

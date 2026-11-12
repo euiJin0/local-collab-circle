@@ -39,7 +39,6 @@ export function ContractDocument({ c }: { c: Contract }) {
     ["분야", c.category],
     ["예상 매출", c.revenue ? formatWon(c.revenue) : "협의"],
     ["수익 배분", `콜라보 매출을 소상공인 ${pct(sh.owner)} · 창작자 ${pct(sh.creator)} · 콜라비 수수료 ${PLATFORM_FEE_LABEL}(고정)로 배분${c.creatorPct != null ? "(직접 제안한 비율)" : "(분야 권장 비율·기본값)"}하며, 실제 매출 기준으로 프로젝트 완료 후 정산`],
-    ["수정 횟수", `최대 ${c.revisions}회`],
     ["저작권", COPYRIGHT_LABEL[c.copyright]],
     ["취소·위약", c.cancelTerms || "—"],
   ];

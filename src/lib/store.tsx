@@ -19,7 +19,6 @@ export type Contract = {
   revenue: number;
   /** 직접 제안한 창작자 몫(%). 없으면 분야 기본 비율 */
   creatorPct?: number | undefined;
-  revisions: number;
   copyright: Copyright;
   cancelTerms: string;
   proposerName: string;
@@ -85,7 +84,6 @@ function seed(): State {
     endDate: "2026-11-30",
     category: "디자인",
     revenue: 0,
-    revisions: 2,
     copyright: "shared",
     cancelTerms: "착수 전 취소 시 위약금 없음, 착수 후 취소 시 진행분 정산",
     proposerName: "나",
