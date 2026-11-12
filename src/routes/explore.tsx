@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronRight, MapPin, Search, Sparkle, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AppScreen } from "@/components/AppShell";
-import { LeafMark } from "@/components/Logo";
+import { LogoMark } from "@/components/Logo";
 import { NearbyMap } from "@/components/NearbyMap";
 import { GradeChip, PartnerAvatar, RoleBadge } from "@/components/PartnerBits";
 import { COLLAB_TYPES, collabTypeTitle, distanceKm, formatDistance, getCollabType, ME_LOCATION, PARTNERS, recommendPartners, ROLE_LABEL, type CollabTypeId, type Role } from "@/lib/colabi";
@@ -57,7 +57,7 @@ function Explore() {
     <AppScreen>
       <header className="flex items-center justify-between px-5 pb-3 pt-5">
         <div className="flex items-center gap-2">
-          <LeafMark className="h-7 w-7" />
+          <LogoMark className="h-8 w-8" />
           <div>
             <p className="font-display text-xl leading-none">콜라비</p>
             <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">

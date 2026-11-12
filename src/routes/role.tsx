@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Check, Palette, Store } from "lucide-react";
 import { useState } from "react";
 import { PhoneFrame } from "@/components/AppShell";
-import { LeafMark } from "@/components/Logo";
+import { LogoMark } from "@/components/Logo";
 import type { Role } from "@/lib/colabi";
 import { useStore } from "@/lib/store";
 
@@ -40,7 +40,7 @@ function RolePage() {
   return (
     <PhoneFrame glow>
       <div className="flex flex-1 flex-col px-6 pb-8 pt-12">
-        <LeafMark className="h-9 w-9" />
+        <LogoMark className="h-11 w-11" />
         <h1 className="mt-5 font-display text-3xl leading-snug">
           콜라비에서
           <br />
