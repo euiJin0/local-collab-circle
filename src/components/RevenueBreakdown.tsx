@@ -57,7 +57,7 @@ export function RevenueBreakdown({
         <span className="font-display text-2xl">{formatWon(myShare(s, role))}</span>
       </div>
       <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-        콜라보 매출은 소상공인 가게에서 생겨요. {custom ? "직접 제안한 비율대로" : `${category} 분야 기본 비율대로`} 소상공인 {pct(sh.owner)} · 창작자 {pct(sh.creator)}로 나누고, 콜라비 수수료 {PLATFORM_FEE_LABEL}는 모든 분야에서 똑같아요. 프로젝트가 완료되면 각자 몫이 정산돼요.
+        콜라보 매출은 소상공인 가게에서 생겨요. {custom ? "직접 제안한 비율대로" : `${category} 분야 권장 비율(기본값)대로`} 소상공인 {pct(sh.owner)} · 창작자 {pct(sh.creator)}로 나누고, 콜라비 수수료 {PLATFORM_FEE_LABEL}는 모든 분야에서 똑같아요. 프로젝트가 완료되면 각자 몫이 정산돼요.
       </p>
     </div>
   );
@@ -83,7 +83,7 @@ export function ShareProposer({
       <p className="mb-1.5 block text-sm font-bold">수익 배분 비율</p>
       <div className="grid grid-cols-2 gap-2">
         <button type="button" className={tab(!custom)} onClick={() => onChange(undefined)}>
-          분야 기본 비율
+          권장 비율(기본값)
         </button>
         <button type="button" className={tab(custom)} onClick={() => onChange(base)}>
           비율 직접 제안
@@ -109,7 +109,7 @@ export function ShareProposer({
             <span>콜라비 수수료 {PLATFORM_FEE_LABEL}는 고정이라 두 분이 {PARTNER_POOL_PCT}%를 나눠요.</span>
             {creator !== base && (
               <button type="button" onClick={() => onChange(base)} className="shrink-0 underline">
-                기본({base}%)으로
+                권장값({base}%)으로
               </button>
             )}
           </div>
@@ -117,7 +117,7 @@ export function ShareProposer({
         </div>
       ) : (
         <p className="mt-1.5 text-[11px] text-muted-foreground">
-          {category} 분야 기본 비율: 소상공인 {owner}% · 창작자 {creator}% · 콜라비 {PLATFORM_FEE_LABEL}
+          {category} 분야 권장 비율(기본값): 소상공인 {owner}% · 창작자 {creator}% · 콜라비 {PLATFORM_FEE_LABEL}. 확정된 비율이 아니라 권장값이라, 두 분이 협의해 "비율 직접 제안"으로 조절할 수 있어요.
         </p>
       )}
     </div>

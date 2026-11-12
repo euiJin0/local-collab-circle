@@ -59,7 +59,7 @@ function EarningsPage() {
         </section>
 
         <p className="rounded-2xl bg-muted p-3 text-xs leading-relaxed text-muted-foreground">
-          모든 금액은 콜라보 매출을 분야별 비율로 나눈 내 몫이에요. 콜라비 수수료는 매출의 {PLATFORM_FEE_LABEL}로 고정이에요. 프로젝트가 완료되면 {settings.account ? `${settings.bank} ${settings.account}` : "등록한 정산 계좌"}로 정산돼요.
+          모든 금액은 콜라보 매출을 분야별 권장 비율(기본값) 또는 직접 정한 비율로 나눈 내 몫이에요. 콜라비 수수료는 매출의 {PLATFORM_FEE_LABEL}로 고정이에요. 프로젝트가 완료되면 {settings.account ? `${settings.bank} ${settings.account}` : "등록한 정산 계좌"}로 정산돼요.
           {!settings.account && (
             <Link to="/settings" className="ml-1 font-bold text-foreground underline">
               계좌 등록하기

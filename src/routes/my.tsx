@@ -136,7 +136,7 @@ function MyPage() {
             </div>
           </div>
           <p className="mt-3 text-[11px] text-muted-foreground">
-            콜라보 매출 중 분야별 배분 비율에 따른 내 몫이에요. 콜라비 수수료는 매출의 {PLATFORM_FEE_LABEL}로 고정이에요.
+            콜라보 매출 중 분야별 권장 비율(기본값) 또는 직접 정한 비율에 따른 내 몫이에요. 콜라비 수수료는 매출의 {PLATFORM_FEE_LABEL}로 고정이에요.
           </p>
         </section>
 

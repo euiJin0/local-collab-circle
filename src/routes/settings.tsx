@@ -151,7 +151,7 @@ function SettingsPage() {
                 <span>수익 배분 기준</span>
                 <span className="text-muted-foreground">콜라비 수수료 {PLATFORM_FEE_LABEL} 고정</span>
               </div>
-              <p className="mt-1 text-[11px] text-muted-foreground">콜라보 매출은 창작자가 맡는 분야에 따라 이렇게 나눠요.</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">아래 표는 분야별 권장 비율(기본값)이에요. 확정된 비율이 아니라서, 콜라보를 제안할 때 두 분이 협의해 비율을 직접 조절할 수 있어요. 콜라비 수수료 8%만 고정이에요.</p>
               <div className="mt-2">
                 <RevenueShareTable />
               </div>
