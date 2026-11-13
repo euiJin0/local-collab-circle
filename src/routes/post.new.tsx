@@ -4,18 +4,18 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { PhoneFrame, SubHeader } from "@/components/AppShell";
 import { CollabTypePicker } from "@/components/CollabTypes";
-import { RevenueBreakdown, ShareProposer } from "@/components/RevenueBreakdown";
+import { MoneyBreakdown, PayModeNote, ShareProposer } from "@/components/RevenueBreakdown";
 import { CATEGORIES, collabTypeTitle, ROLE_LABEL, type CollabTypeId } from "@/lib/colabi";
-import { formatWon, parseWon } from "@/lib/money";
+import { formatWon, parseWon, payModeOf } from "@/lib/money";
 import { newId, todayISO, useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/post/new")({
   head: () => ({
     meta: [
       { title: "콜라보 올리기 — 콜라비" },
-      { name: "description", content: "쓸 재능과 예상 매출을 정해 동네 파트너에게 콜라보를 올려보세요. 분야별 수익 배분과 받을 금액을 바로 확인할 수 있어요." },
+      { name: "description", content: "쓸 재능과 금액을 정해 동네 파트너에게 콜라보를 올려보세요. 받을 금액을 바로 확인할 수 있어요." },
       { property: "og:title", content: "콜라보 올리기 — 콜라비" },
-      { property: "og:description", content: "내 재능과 예상 매출을 올리고 받을 수익을 미리 확인하세요." },
+      { property: "og:description", content: "내 재능과 금액을 올리고 받을 수익을 미리 확인하세요." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -40,6 +40,8 @@ function NewPost() {
   const [amount, setAmount] = useState(0);
   const [creatorPct, setCreatorPct] = useState<number | undefined>(undefined);
   const [duration, setDuration] = useState(DURATIONS[1]!);
+  const mode = payModeOf(collabTypes);
+  const amountLabel = mode === "split" ? "예상 콜라보 매출" : isOwner ? "창작자에게 제안할 금액" : "희망 금액";
 
   const addSkill = () => {
     const v = skillInput.trim().replace(/^#/, "");
@@ -58,7 +60,7 @@ function NewPost() {
       skills,
       description: description.trim(),
       amount,
-      creatorPct,
+      creatorPct: mode === "split" ? creatorPct : undefined,
       duration,
       lookingFor: isOwner ? "creator" : "owner",
       createdAt: todayISO(),
@@ -165,11 +167,17 @@ function NewPost() {
         </div>
 
         <div>
-          <p className={label}>예상 콜라보 매출</p>
-          <p className="mb-2 text-[11px] text-muted-foreground">콜라보로 가게에서 생길 것으로 예상되는 매출이에요. 위에서 고른 분야에 따라 나눠요.</p>
+          <p className={label}>{amountLabel}</p>
+          <p className="mb-2 text-[11px] text-muted-foreground">
+            {mode === "split"
+              ? "콜라보 상품으로 가게에서 생길 것으로 예상되는 매출이에요. 위에서 고른 분야에 따라 나눠요."
+              : isOwner
+                ? "판매가 없는 콜라보라 매출을 나누지 않아요. 작업 대가로 창작자에게 지급할 금액을 적어주세요."
+                : "판매가 없는 콜라보라 매출을 나누지 않아요. 작업 대가로 받고 싶은 금액을 적어주세요. 최종 금액은 소상공인이 정해요."}
+          </p>
           <div className="relative mt-2">
             <input
-              aria-label="예상 콜라보 매출(원)"
+              aria-label={`${amountLabel}(원)`}
               inputMode="numeric"
               className={`${field} pr-10 text-right text-lg font-bold`}
               placeholder="0"
@@ -192,8 +200,9 @@ function NewPost() {
           </div>
         </div>
 
-        <ShareProposer category={category} value={creatorPct} onChange={setCreatorPct} />
-        <RevenueBreakdown amount={amount} category={category} creatorPct={creatorPct} role={profile.role} />
+        {collabTypes.length > 0 && <PayModeNote mode={mode} />}
+        {mode === "split" && <ShareProposer category={category} value={creatorPct} onChange={setCreatorPct} />}
+        <MoneyBreakdown mode={mode} amount={amount} category={category} creatorPct={creatorPct} role={profile.role} />
       </div>
 
       <div className="fixed bottom-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 border-t bg-card p-4">

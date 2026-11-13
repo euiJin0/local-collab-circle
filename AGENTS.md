@@ -30,4 +30,4 @@ use the editor.
 <!-- LOVABLE:END -->
 
 ## Project rules
-- Collab money is computed only in src/lib/money.ts (revenueSplit / earningsSummary by role); screens never hardcode rates, so the split table has one source.
+- Collab money is computed only in src/lib/money.ts; the payout mode (revenue split vs proposed amount) is derived from the collab type via payModeOf, and screens use contractMoney/postMoney instead of hardcoding rates, so the rules have one source.

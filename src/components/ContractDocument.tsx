@@ -1,6 +1,6 @@
 import { getCollabType } from "@/lib/colabi";
 import { BREACH_CLAUSE, LEGAL_BASIS, LEGAL_DISCLAIMER, MANUAL_CASES, MANUAL_STEPS } from "@/lib/contractManual";
-import { formatWon, pct, PLATFORM_FEE_LABEL, shareOf } from "@/lib/money";
+import { contractMoney, formatWon, pct, PLATFORM_FEE_LABEL } from "@/lib/money";
 import type { Contract } from "@/lib/store";
 
 export const COPYRIGHT_LABEL = {
@@ -66,7 +66,7 @@ function BreachManual() {
 }
 
 export function ContractDocument({ c }: { c: Contract }) {
-  const sh = shareOf(c.category, c.creatorPct);
+  const m = contractMoney(c);
   const ct = getCollabType(c.collabType);
   const rows: [string, string][] = [
     ["프로젝트명", c.title || "—"],
@@ -75,8 +75,15 @@ export function ContractDocument({ c }: { c: Contract }) {
     ["결과물", c.deliverables || "—"],
     ["기간", `${c.startDate} ~ ${c.endDate}`],
     ["분야", c.category],
-    ["예상 매출", c.revenue ? formatWon(c.revenue) : "협의"],
-    ["수익 배분", `콜라보 매출을 소상공인 ${pct(sh.owner)} · 창작자 ${pct(sh.creator)} · 콜라비 수수료 ${PLATFORM_FEE_LABEL}(고정)로 배분${c.creatorPct != null ? "(직접 제안한 비율)" : "(분야 권장 비율·기본값)"}하며, 실제 매출 기준으로 프로젝트 완료 후 정산`],
+    ...(m.mode === "split"
+      ? ([
+          ["예상 매출", c.amount ? formatWon(c.amount) : "협의"],
+          ["수익 배분", `판매형 콜라보(상품·서비스 개발)로, 콜라보 매출을 소상공인 ${pct(m.ownerRate)} · 창작자 ${pct(m.creatorRate)} · 콜라비 수수료 ${PLATFORM_FEE_LABEL}(고정)로 배분${c.creatorPct != null ? "(직접 제안한 비율)" : "(분야 권장 비율·기본값)"}하며, 실제 매출 기준으로 프로젝트 완료 후 정산`],
+        ] as [string, string][])
+      : ([
+          ["콜라보 금액", c.amount ? formatWon(c.amount) : "협의"],
+          ["지급 방식", `판매가 없는 콜라보로 매출을 배분하지 않으며, 소상공인이 창작자에게 ${formatWon(m.ownerPays)}을 지급. 콜라비 수수료 ${PLATFORM_FEE_LABEL}(${formatWon(m.fee)}, 고정)를 뺀 ${formatWon(m.creator)}을 창작자가 받고, 프로젝트 완료 후 정산`],
+        ] as [string, string][])),
     ["저작권", COPYRIGHT_LABEL[c.copyright]],
     ["취소·위약", c.cancelTerms || "—"],
     ["불이행 대응", BREACH_CLAUSE],

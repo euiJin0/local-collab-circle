@@ -4,7 +4,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { PhoneFrame, SubHeader } from "@/components/AppShell";
 import { ContractDocument } from "@/components/ContractDocument";
-import { RevenueBreakdown } from "@/components/RevenueBreakdown";
+import { MoneyBreakdown } from "@/components/RevenueBreakdown";
+import { payModeOf } from "@/lib/money";
 import { PartnerAvatar, RoleBadge } from "@/components/PartnerBits";
 import { SignaturePad } from "@/components/SignaturePad";
 import { getPartner } from "@/lib/colabi";
@@ -105,10 +106,10 @@ function ProjectDetail() {
           </div>
         )}
 
-        {pr.contract.revenue ? (
+        {pr.contract.amount ? (
           <div>
-            <p className="mb-2 text-sm font-bold">{pr.status === "done" ? "정산 내역" : "수익 배분 예상"}</p>
-            <RevenueBreakdown amount={pr.contract.revenue} category={pr.contract.category} creatorPct={pr.contract.creatorPct} role={profile.role} label={pr.status === "done" ? "콜라보 매출" : "예상 콜라보 매출"} />
+            <p className="mb-2 text-sm font-bold">{pr.status === "done" ? "정산 내역" : payModeOf(pr.contract.collabType) === "fee" ? "지급 금액 예상" : "수익 배분 예상"}</p>
+            <MoneyBreakdown mode={payModeOf(pr.contract.collabType)} amount={pr.contract.amount} category={pr.contract.category} creatorPct={pr.contract.creatorPct} role={profile.role} done={pr.status === "done"} />
           </div>
         ) : null}
 

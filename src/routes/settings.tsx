@@ -139,7 +139,7 @@ function SettingsPage() {
             >
               계좌 저장
             </button>
-            <p className="text-[11px] text-muted-foreground">프로젝트가 완료되면 콜라보 매출 중 내 몫이 이 계좌로 정산돼요.</p>
+            <p className="text-[11px] text-muted-foreground">프로젝트가 완료되면 내 몫(매출 배분 또는 받은 금액)이 이 계좌로 정산돼요.</p>
           </div>
         </section>
 
@@ -151,7 +151,7 @@ function SettingsPage() {
                 <span>수익 배분 기준</span>
                 <span className="text-muted-foreground">콜라비 수수료 {PLATFORM_FEE_LABEL} 고정</span>
               </div>
-              <p className="mt-1 text-[11px] text-muted-foreground">아래 표는 분야별 권장 비율(기본값)이에요. 확정된 비율이 아니라서, 콜라보를 제안할 때 두 분이 협의해 비율을 직접 조절할 수 있어요. 콜라비 수수료 8%만 고정이에요.</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">매출 배분은 판매가 일어나는 상품·서비스 개발 콜라보에만 적용되고, 그 외 협업유형은 소상공인이 창작자에게 금액을 제안해요. 아래 표는 분야별 권장 비율(기본값)이에요. 확정된 비율이 아니라서, 콜라보를 제안할 때 두 분이 협의해 비율을 직접 조절할 수 있어요. 콜라비 수수료 8%만 고정이에요.</p>
               <div className="mt-2">
                 <RevenueShareTable />
               </div>

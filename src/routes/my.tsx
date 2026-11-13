@@ -15,7 +15,7 @@ import {
   ROLE_LABEL,
   type ColabiStats,
 } from "@/lib/colabi";
-import { earningsSummary, formatWon, myRate, myShare, pct, PLATFORM_FEE_LABEL, revenueSplit } from "@/lib/money";
+import { earningsSummary, formatWon, myRate, myShare, pct, PLATFORM_FEE_LABEL, postMoney } from "@/lib/money";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/my")({
@@ -136,7 +136,7 @@ function MyPage() {
             </div>
           </div>
           <p className="mt-3 text-[11px] text-muted-foreground">
-            콜라보 매출 중 분야별 권장 비율(기본값) 또는 직접 정한 비율에 따른 내 몫이에요. 콜라비 수수료는 매출의 {PLATFORM_FEE_LABEL}로 고정이에요.
+            상품·서비스 개발은 콜라보 매출 중 내 몫, 그 외 협업유형은 소상공인이 창작자에게 지급하는 제안 금액 기준이에요. 콜라비 수수료는 {PLATFORM_FEE_LABEL}로 고정이에요.
           </p>
         </section>
 
@@ -150,7 +150,7 @@ function MyPage() {
           </div>
           <ul className="mt-3 space-y-2">
             {posts.map((po) => {
-              const s = revenueSplit(po.amount, po.category, po.creatorPct);
+              const s = postMoney(po);
               return (
                 <li key={po.id} className={`rounded-2xl border p-3 ${po.status === "closed" ? "opacity-60" : ""}`}>
                   <div className="flex items-start justify-between gap-2">
@@ -183,10 +183,10 @@ function MyPage() {
                   </div>
                   <div className="mt-2 flex items-end justify-between text-xs">
                     <span className="text-muted-foreground">
-                      예상 매출 {formatWon(s.gross)} · 내 몫 {pct(myRate(po.category, profile.role, po.creatorPct))}
+                      {s.mode === "fee" ? `${profile.role === "owner" ? "제안 금액" : "희망 금액"} ${formatWon(s.gross)}` : `예상 매출 ${formatWon(s.gross)} · 내 몫 ${pct(myRate(s, profile.role))}`}
                     </span>
                     <span className="font-bold">
-                      받을 금액 {formatWon(myShare(s, profile.role))}
+                      {s.mode === "fee" && profile.role === "owner" ? `지급할 금액 ${formatWon(s.ownerPays)}` : `받을 금액 ${formatWon(myShare(s, profile.role))}`}
                     </span>
                   </div>
                   <button

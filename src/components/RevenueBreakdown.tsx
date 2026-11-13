@@ -1,6 +1,6 @@
 import type { Role } from "@/lib/colabi";
 import { CATEGORIES } from "@/lib/colabi";
-import { clampCreatorPct, defaultCreatorPct, formatWon, myShare, PARTNER_POOL_PCT, pct, PLATFORM_FEE_LABEL, PLATFORM_FEE_RATE, REVENUE_SHARE, revenueSplit, shareOf } from "@/lib/money";
+import { clampCreatorPct, defaultCreatorPct, feeSplit, formatWon, myShare, PARTNER_POOL_PCT, pct, PLATFORM_FEE_LABEL, PLATFORM_FEE_RATE, REVENUE_SHARE, revenueSplit, shareOf, type PayMode } from "@/lib/money";
 
 /** 콜라보 매출 → 소상공인 / 창작자 / 콜라비 수수료 배분 */
 export function RevenueBreakdown({
@@ -60,6 +60,86 @@ export function RevenueBreakdown({
         콜라보 매출은 소상공인 가게에서 생겨요. {custom ? "직접 제안한 비율대로" : `${category} 분야 권장 비율(기본값)대로`} 소상공인 {pct(sh.owner)} · 창작자 {pct(sh.creator)}로 나누고, 콜라비 수수료 {PLATFORM_FEE_LABEL}는 모든 분야에서 똑같아요. 프로젝트가 완료되면 각자 몫이 정산돼요.
       </p>
     </div>
+  );
+}
+
+/** 금액 제안형: 소상공인이 창작자에게 지급 → 콜라비 수수료 8% 제외 후 창작자 수령 */
+export function FeeBreakdown({ amount, role, label = "제안 금액" }: { amount: number; role: Role | null; label?: string }) {
+  const s = feeSplit(amount);
+  const isOwner = role === "owner";
+  return (
+    <div className="rounded-2xl bg-accent p-4 text-sm text-accent-foreground">
+      <div className="flex justify-between">
+        <span>{label}</span>
+        <span className="font-bold">{formatWon(s.gross)}</span>
+      </div>
+      <ul className="mt-3 space-y-1.5">
+        <li className={`flex items-center justify-between ${isOwner ? "font-bold" : "text-muted-foreground"}`}>
+          <span className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-secondary-strong" />
+            소상공인 → 창작자 지급
+            {isOwner && <span className="rounded-full bg-card px-1.5 py-0.5 text-[10px]">나</span>}
+          </span>
+          <span>{formatWon(s.ownerPays)}</span>
+        </li>
+        <li className="flex items-center justify-between text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-muted-foreground" />
+            콜라비 수수료 {pct(PLATFORM_FEE_RATE)} (고정)
+          </span>
+          <span>−{formatWon(s.fee)}</span>
+        </li>
+        <li className={`flex items-center justify-between ${!isOwner ? "font-bold" : "text-muted-foreground"}`}>
+          <span className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-primary-strong" />
+            창작자가 받는 금액
+            {!isOwner && <span className="rounded-full bg-card px-1.5 py-0.5 text-[10px]">나</span>}
+          </span>
+          <span>{formatWon(s.creator)}</span>
+        </li>
+      </ul>
+      <div className="mt-2 flex items-end justify-between border-t border-foreground/10 pt-2">
+        <span className="font-bold">{isOwner ? "내가 지급할 금액" : "내가 받을 금액"}</span>
+        <span className="font-display text-2xl">{formatWon(isOwner ? s.ownerPays : s.creator)}</span>
+      </div>
+      <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+        판매가 없는 콜라보라 매출을 나누지 않고, 소상공인이 창작자에게 작업 금액을 지급해요. 콜라비 수수료 {PLATFORM_FEE_LABEL}는 이 금액에서 빠지고, 프로젝트가 완료되면 정산돼요.
+      </p>
+    </div>
+  );
+}
+
+/** 정산 방식에 맞는 금액 카드 */
+export function MoneyBreakdown({
+  mode,
+  amount,
+  category,
+  creatorPct,
+  role,
+  done = false,
+}: {
+  mode: PayMode;
+  amount: number;
+  category: string;
+  creatorPct?: number | undefined;
+  role: Role | null;
+  done?: boolean;
+}) {
+  return mode === "fee" ? (
+    <FeeBreakdown amount={amount} role={role} label={done ? "지급 금액" : "제안 금액"} />
+  ) : (
+    <RevenueBreakdown amount={amount} category={category} creatorPct={creatorPct} role={role} label={done ? "콜라보 매출" : "예상 콜라보 매출"} />
+  );
+}
+
+/** 금액 제안형일 때, 왜 매출 배분이 아닌지 알려주는 안내 */
+export function PayModeNote({ mode }: { mode: PayMode }) {
+  return (
+    <p className="rounded-2xl bg-muted p-3 text-[11px] leading-relaxed text-muted-foreground">
+      {mode === "split"
+        ? "🧁 상품·서비스 개발은 만든 상품을 가게에서 판매하니까, 콜라보 매출을 소상공인과 창작자가 나눠요."
+        : "💸 판매가 없는 협업유형이라 매출을 나누지 않아요. 대신 소상공인이 창작자에게 작업 금액을 제안해요. (매출 배분은 상품·서비스 개발에만 적용돼요.)"}
+    </p>
   );
 }
 

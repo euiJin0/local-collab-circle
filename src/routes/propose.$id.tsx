@@ -6,10 +6,10 @@ import { PhoneFrame, SubHeader } from "@/components/AppShell";
 import { CollabTypePicker } from "@/components/CollabTypes";
 import { ContractDocument, COPYRIGHT_LABEL } from "@/components/ContractDocument";
 import { PartnerAvatar } from "@/components/PartnerBits";
-import { RevenueBreakdown, ShareProposer } from "@/components/RevenueBreakdown";
+import { MoneyBreakdown, PayModeNote, ShareProposer } from "@/components/RevenueBreakdown";
 import { SignaturePad } from "@/components/SignaturePad";
 import { CATEGORIES, collabTypeTitle, getPartner, sharedCollabTypes } from "@/lib/colabi";
-import { parseWon } from "@/lib/money";
+import { parseWon, payModeOf } from "@/lib/money";
 import { newId, todayISO, useStore, type Contract, type Copyright } from "@/lib/store";
 
 export const Route = createFileRoute("/propose/$id")({
@@ -53,16 +53,17 @@ function ProposePage() {
     startDate: todayISO(),
     endDate: todayISO(),
     category: (CATEGORIES as readonly string[]).includes(partner.category) ? partner.category : CATEGORIES[0],
-    revenue: 0,
+    amount: 0,
     copyright: "shared",
     cancelTerms: "착수 전 취소 시 위약금 없음, 착수 후 취소 시 진행분 정산",
     proposerName: profile.nickname || "나",
     partnerName: partner.name,
   }));
   const set = <K extends keyof Contract>(k: K, v: Contract[K]) => setC((s) => ({ ...s, [k]: v }));
+  const mode = payModeOf(c.collabType);
 
   const step0ok = !!c.collabType && c.title.trim().length > 0 && c.scope.trim().length > 0;
-  const step1ok = c.endDate >= c.startDate && c.revenue > 0;
+  const step1ok = c.endDate >= c.startDate && c.amount > 0;
   const canNext = step === 0 ? step0ok : step === 1 ? step1ok : agree && !!sign;
 
   const submit = () => {
@@ -73,7 +74,7 @@ function ProposePage() {
       status: "sent",
       createdAt: todayISO(),
       progress: 0,
-      contract: { ...c, proposerSign: sign ?? undefined, proposerSignedAt: todayISO() } as Contract,
+      contract: { ...c, creatorPct: mode === "split" ? c.creatorPct : undefined, proposerSign: sign ?? undefined, proposerSignedAt: todayISO() } as Contract,
     });
     sendMessage(partner.id, `📄 '${c.title}' 콜라보 계약서를 보냈어요. 확인 후 서명해 주세요!`, "system");
     toast.success("계약서와 함께 제안을 보냈어요");
@@ -165,6 +166,7 @@ function ProposePage() {
               </div>
             </div>
             {c.endDate < c.startDate && <p className="text-xs text-destructive">종료일은 시작일 이후여야 해요.</p>}
+            <PayModeNote mode={mode} />
             <div>
               <p className={label}>창작자가 맡는 분야</p>
               <div className="flex flex-wrap gap-2">
@@ -174,25 +176,33 @@ function ProposePage() {
                   </button>
                 ))}
               </div>
-              <p className="mt-1 text-[11px] text-muted-foreground">분야에 따라 소상공인과 창작자의 수익 배분 비율이 정해져요.</p>
+              {mode === "split" && <p className="mt-1 text-[11px] text-muted-foreground">분야에 따라 소상공인과 창작자의 권장 배분 비율이 정해져요.</p>}
             </div>
             <div>
-              <label className={label} htmlFor="revenue">예상 콜라보 매출</label>
+              <label className={label} htmlFor="amount">
+                {mode === "split" ? "예상 콜라보 매출" : myRole === "owner" ? "창작자에게 제안할 금액" : "희망 금액"}
+              </label>
               <div className="relative">
                 <input
-                  id="revenue"
+                  id="amount"
                   inputMode="numeric"
                   className={`${field} pr-10 text-right text-lg font-bold`}
                   placeholder="0"
-                  value={c.revenue ? c.revenue.toLocaleString("ko-KR") : ""}
-                  onChange={(e) => set("revenue", Math.min(parseWon(e.target.value), 1000000000))}
+                  value={c.amount ? c.amount.toLocaleString("ko-KR") : ""}
+                  onChange={(e) => set("amount", Math.min(parseWon(e.target.value), 1000000000))}
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">원</span>
               </div>
-              <p className="mt-1 text-[11px] text-muted-foreground">콜라보로 가게에서 생길 것으로 예상되는 매출이에요. 정산은 실제 매출 기준으로 해요.</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                {mode === "split"
+                  ? "콜라보 상품으로 가게에서 생길 것으로 예상되는 매출이에요. 정산은 실제 매출 기준으로 해요."
+                  : myRole === "owner"
+                    ? "작업 대가로 창작자에게 지급할 금액이에요. 창작자가 서명하면 확정돼요."
+                    : "작업 대가로 받고 싶은 금액이에요. 소상공인이 확인하고 서명하면 확정돼요."}
+              </p>
             </div>
-            <ShareProposer category={c.category} value={c.creatorPct} onChange={(v) => set("creatorPct", v)} />
-            <RevenueBreakdown amount={c.revenue} category={c.category} creatorPct={c.creatorPct} role={profile.role} />
+            {mode === "split" && <ShareProposer category={c.category} value={c.creatorPct} onChange={(v) => set("creatorPct", v)} />}
+            <MoneyBreakdown mode={mode} amount={c.amount} category={c.category} creatorPct={c.creatorPct} role={profile.role ?? myRole} />
             <div>
               <p className={label}>저작권</p>
               <div className="space-y-2">
@@ -212,7 +222,7 @@ function ProposePage() {
 
         {step === 2 && (
           <>
-            <ContractDocument c={{ ...c, proposerSign: sign ?? undefined } as Contract} />
+            <ContractDocument c={{ ...c, creatorPct: mode === "split" ? c.creatorPct : undefined, proposerSign: sign ?? undefined } as Contract} />
             <div>
               <p className={label}>제안자 전자서명</p>
               <SignaturePad onChange={setSign} />
